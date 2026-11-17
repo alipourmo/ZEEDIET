@@ -51,7 +51,7 @@ Primary goals: reduce front-desk errors, give every client a digital file with a
 
 | Concern | Decision |
 |---|---|
-| Language / framework | PHP 8.3, Laravel 11 |
+| Language / framework | Laravel 13 and PHP 8.4 (owner approved 2026-11-17; v1.0 said Laravel 11 and PHP 8.3). PHP 8.4 is needed by Pest 5. See docs/DECISIONS.md |
 | Database | MySQL 8 (utf8mb4, utf8mb4_unicode_ci), InnoDB, FK constraints on |
 | Templates | Blade + Alpine.js; no SPA framework; progressive enhancement |
 | CSS | Hand-written CSS with custom properties; no CSS framework required |

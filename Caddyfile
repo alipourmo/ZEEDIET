@@ -1,0 +1,12 @@
+:{$PORT:80} {
+    root * /app/public
+
+    encode zstd gzip
+
+    # Keep the preview out of search indexes (spec section 10.12).
+    header X-Robots-Tag "noindex, nofollow"
+
+    php_server {
+        try_files {path} index.php
+    }
+}

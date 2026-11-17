@@ -37,17 +37,26 @@ jobs:
       - name: Pest
         run: |
           mkdir -p build
-          vendor/bin/pest --log-junit build/pest-junit.xml
+          set +e
+          vendor/bin/pest --log-junit build/pest-junit.xml > build/pest-output.txt 2>&1
+          status=$?
+          cat build/pest-output.txt
+          exit $status
 
       - name: Report Pest failures as annotations
         if: failure()
         run: |
           python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          tree = ET.parse('build/pest-junit.xml')
-          for case in tree.iter('testcase'):
-              for child in list(case):
-                  if child.tag in ('failure', 'error'):
-                      message = (child.get('message') or '').replace('\n', ' ')[:800]
-                      print(f"::error title={case.get('name')}::{message}")
+          import os, xml.etree.ElementTree as ET
+          if os.path.exists('build/pest-junit.xml'):
+              tree = ET.parse('build/pest-junit.xml')
+              for case in tree.iter('testcase'):
+                  for child in list(case):
+                      if child.tag in ('failure', 'error'):
+                          message = (child.get('message') or '').replace('\n', ' ')[:800]
+                          print(f"::error title={case.get('name')}::{message}")
+          if os.path.exists('build/pest-output.txt'):
+              lines = open('build/pest-output.txt', encoding='utf8', errors='replace').read().splitlines()
+              tail = '%0A'.join(lines[-60:])
+              print(f"::error title=Pest output tail::{tail}")
           PY

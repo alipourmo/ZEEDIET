@@ -6,7 +6,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 
 ## Status
 
-**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is in progress: S1-T1 to S1-T4 are done (CI green), S1-T5 is built.
+**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is in progress: S1-T1 to S1-T5 are done (CI green).
 
 | Area | State |
 |---|---|
@@ -22,7 +22,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S1-T2: staff login, rate limit, forced password change, seeded staff | Done (CI green) |
 | S1-T3: audit logger, login/logout audit, admin audit viewer | Done (CI green) |
 | S1-T4: clients and medical record, codes, consent, Jalali birth date, duplicate mobile, soft delete | Done (CI green) |
-| S1-T5: alert badges, medical tab restricted to medical.view | Built (CI pending) |
+| S1-T5: alert badges, medical tab restricted to medical.view | Done (CI green) |
 | Clients, scheduling, operator, specialist, portal, SMS | Not yet (S1–S5) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Catalog\RoomController;
 use App\Http\Controllers\Admin\Catalog\ServiceController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientMedicalController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\PanelController;
@@ -64,6 +65,16 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
         ->names('admin.rooms')
         ->only(['index', 'create', 'store', 'edit', 'update'])
         ->middleware('can:catalog.manage');
+
+    // Staff accounts (spec sections 7.6 and 8.2). Admin only: the user.manage Gate. Deleting a user is not offered:
+    // deactivation keeps the audit history readable.
+    Route::resource('admin/users', UserController::class)
+        ->names('admin.users')
+        ->only(['index', 'create', 'store', 'edit', 'update'])
+        ->middleware('can:user.manage');
+    Route::post('admin/users/{user}/reset-password', [UserController::class, 'resetPassword'])
+        ->name('admin.users.reset-password')
+        ->middleware('can:user.manage');
 
     // Admin only, by the audit.view Gate (spec sections 5 and 8.2).
     Route::get('/admin/audit', [AuditLogController::class, 'index'])

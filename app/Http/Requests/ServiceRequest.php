@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ServiceKind;
 use App\Models\Service;
+use App\Support\Digits;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -22,12 +23,19 @@ class ServiceRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        // Prices are typed with separators (150,000), so the separators are removed before validation.
+        // Prices are typed with separators (150,000) and Persian digits (۱۵۰۰۰۰), so both are normalised before
+        // validation. The duration is also converted, since it may be typed in Persian digits.
         $price = $this->input('default_price');
 
         if (is_string($price)) {
-            $digits = str_replace([',', '٬', ' '], '', trim($price));
+            $digits = Digits::toAscii(str_replace([',', '٬', '،', ' ', "\u{200c}"], '', trim($price)));
             $this->merge(['default_price' => $digits === '' ? null : $digits]);
+        }
+
+        $duration = $this->input('default_duration_min');
+
+        if (is_string($duration)) {
+            $this->merge(['default_duration_min' => Digits::toAscii(trim($duration))]);
         }
     }
 

@@ -533,3 +533,14 @@ main {
 .details dt { font-weight: 600; }
 .details dd { margin: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* One-time temporary password on the reset and create pages (S1-T7). */
+.temp-password {
+  display: inline-block;
+  padding: 0.5rem 0.9rem;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  background: var(--surface-subtle, #f3f4f6);
+  border-radius: 6px;
+  user-select: all;
+}

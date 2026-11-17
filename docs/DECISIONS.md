@@ -292,3 +292,16 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Example seed data** (`CatalogSeeder`, idempotent, found by name): three services from spec section 15 with durations 30, 20 and 45 minutes, two example devices with contraindications, two rooms. Names, durations, device contraindications and room names are examples for the clinic to confirm. Prices are left empty.
 - **Spec references:** §12 says the seeders are in "section 14". The seed list is in §15.
 - **Checkboxes after a failed save.** `old()` falls back to the saved value when a checkbox is absent from the submitted form. An unticked box therefore came back ticked after a validation error elsewhere on the form. Convention now used in every form with checkboxes: `$errors->any() ? (bool) old('x') : <saved value>`. Fixed on the photo consent and contraindication boxes (S1-T4) and on the catalog forms (tested).
+
+## 2026-11-17 — S1-T7: users (staff accounts)
+
+- **Admin only**, via `user.manage` (spec §5 and §8.2). Routes `/admin/users` (list, create, edit, update) and `POST /admin/users/{user}/reset-password`.
+- **No delete.** Accounts are deactivated (`is_active`). The audit history keeps pointing at real users.
+- **Passwords are generated, not typed.** A 16-character random password is created when an account is made or reset. It is shown once on the response page and is not flashed to the session or written to the log. Only its hash is stored. Closing that page loses it, so the admin must reset the password again. Passwords are never written to the audit trail.
+- **Forced change.** A new or reset account has `must_change_password = true`. The existing `EnsurePasswordIsChanged` middleware sends the user to the password change page at their next sign-in.
+- **Reset ends sessions.** Resetting a password deletes that user's `sessions` rows at once. Deactivating does the same, so the user is signed out now, not on their next request. `EnsureStaffIsActive` still covers any row not removed.
+- **Self-protection.** An admin cannot deactivate their own account or change their own role. An admin resets their own password through the password change page, not the user screen. This stops the last working admin from being locked out.
+- **Audit.** Create, update (old and new values, minus password) and `password_reset` each write one row (spec §7.8).
+- **Mobile** is normalised (Persian digits and `+98` accepted) and must be unique and match `09xxxxxxxxx`.
+- **Validation messages.** `lang/fa/validation.php` now covers the rules and attribute names the new forms use. Before this, unlisted rules would show raw English keys.
+- **Service prices and durations** now convert Persian digits with `Digits::toAscii`. This closes the S1-T6 gap.

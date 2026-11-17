@@ -18,7 +18,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | RTL layout, Vazirmatn, CSS tokens, card/button/badge | Done |
 | Preview pages (home, Jalali tool, mobile tool, `/_styleguide` local) | Done |
 | Vercel container preview | Files ready, deployment blocked (see DECISIONS) |
-| S1-T1: staff schema, permission config and Gates, panel middleware | Done (CI pending) |
+| S1-T1: staff schema, permission config and Gates, panel middleware | Done (CI green) |
 | Clients, scheduling, operator, specialist, portal, SMS | Not yet (S1–S5) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

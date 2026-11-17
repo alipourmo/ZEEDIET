@@ -39,7 +39,8 @@ final class AuditLogger
         $actor ??= $signedIn instanceof User ? $signedIn : null;
         $request = request();
 
-        return AuditLog::create([
+        /** @var AuditLog $log */
+        $log = AuditLog::create([
             'actor_type' => $actor instanceof User ? 'user' : 'system',
             'actor_id' => $actor?->getKey(),
             'action' => $action->value,
@@ -50,6 +51,8 @@ final class AuditLogger
             'ip' => $request->ip(),
             'user_agent' => Str::limit((string) $request->userAgent(), 255, ''),
         ]);
+
+        return $log;
     }
 
     /**

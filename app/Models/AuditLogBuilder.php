@@ -11,6 +11,9 @@ use LogicException;
  * Query builder for audit_logs that refuses bulk updates and deletes (spec section 6.5).
  * Model-level update() and delete() reach these methods too, so they are refused as well.
  */
+/**
+ * @extends Builder<AuditLog>
+ */
 class AuditLogBuilder extends Builder
 {
     /**

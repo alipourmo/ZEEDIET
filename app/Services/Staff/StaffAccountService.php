@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Staff;
 
 use App\Enums\AuditAction;
+use App\Enums\StaffRole;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use Illuminate\Support\Facades\DB;
@@ -109,10 +110,13 @@ final class StaffAccountService
      */
     private function summary(User $user): array
     {
+        /** @var StaffRole $role */
+        $role = $user->role;
+
         return [
             'name' => $user->name,
             'mobile' => $user->mobile,
-            'role' => $user->role->value,
+            'role' => $role->value,
             'is_active' => $user->is_active,
         ];
     }

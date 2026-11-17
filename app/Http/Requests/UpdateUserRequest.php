@@ -57,7 +57,10 @@ class UpdateUserRequest extends FormRequest
                 return;
             }
 
-            if ($this->string('role')->value() !== $actor->role->value) {
+            /** @var StaffRole $actorRole */
+            $actorRole = $actor->role;
+
+            if ($this->string('role')->value() !== $actorRole->value) {
                 $v->errors()->add('role', __('users.self_role'));
             }
 

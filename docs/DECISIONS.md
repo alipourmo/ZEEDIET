@@ -190,3 +190,34 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 ## 2026-11-17 — S1-T1: CI debugging notes
 
 - A Pest step failure gave no usable log via `gh` in this sandbox. Diagnosis used check-run annotations: the 3 KB limit means long output needs base64 chunks, one per notice. The temporary diagnostic steps were removed; `ci.yml` is back to the S0 version.
+
+## 2026-11-17 — S1-T2: staff login uses Auth::attempt with is_active in the query
+
+- **Choice:** `LoginController::store` calls `Auth::attempt(['mobile', 'password', 'is_active' => true])`. A deactivated account and a wrong password produce the same message (`auth.failed`), so the login form does not reveal which mobiles exist.
+- **Throttle:** `RateLimiter` in the controller, not the `throttle` middleware, because the key needs the normalised mobile. Key: mobile + IP. 5 failed attempts, decay 60 seconds (spec section 7.6). A successful login clears the key.
+
+## 2026-11-17 — S1-T2: deactivated sessions end on the next request
+
+- **Choice:** `EnsureStaffIsActive` runs in the `web` group. If the signed-in user has `is_active = false`, it logs them out, invalidates the session and redirects to login with a message.
+- **Reason:** With the database session driver, deleting another user's session rows needs their session ids. Checking on each request covers the rule in spec section 7.6 ("logged out on next request") and is the same mechanism S1-T7 relies on when an admin deactivates a user.
+
+## 2026-11-17 — S1-T2: /password/change route added
+
+- **Reason:** Spec section 7.6 requires a forced password change, but section 8.1 lists only the login and logout routes. `EnsurePasswordIsChanged` (in the `web` group) sends a user with `must_change_password` to `/password/change` before any other page. That route, and logout, are the only pages allowed meanwhile.
+
+## 2026-11-17 — S1-T2: seeded staff accounts
+
+- **Choice:** `StaffSeeder` creates one account per role. Mobiles are placeholders `09000000001`–`09000000004`, to be replaced by the clinic before go-live. Each password is `Str::random(16)`, printed once with `$this->command->warn` and not stored in plain text. `must_change_password` is true. An existing mobile is skipped, so re-running the seeder does not reset passwords.
+- **Names:** from `lang/fa/seeders.php`, not hard-coded.
+
+## 2026-11-17 — S1-T2: lang/fa/validation.php added (partial)
+
+- The S0 notes listed this file as missing. It now holds the messages for the rules used so far (required, string, max, min, confirmed, different, current_password). Add a line when a new rule is used. Laravel's own English messages are not loaded, because `APP_FALLBACK_LOCALE=fa`.
+
+## 2026-11-17 — S1-T2: login and logout audit entries are deferred to S1-T3
+
+- Spec section 7.8 asks for audit rows on sensitive actions. `AuditLogger` is built in S1-T3, so login, logout and password-change events are not yet audited. This is an open item in `docs/sprints/S1.md`.
+
+## 2026-11-17 — S1-T2: route protection test added early
+
+- `tests/Feature/RouteProtectionTest.php` (spec section 10.5) walks all routes. Every route must be on the public allowlist or carry `auth` or an `area:` middleware. The allowlist is in the test, so adding a public route is an explicit change.

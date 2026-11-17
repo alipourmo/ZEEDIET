@@ -20,7 +20,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | Vercel container preview | Files ready, deployment blocked (see DECISIONS) |
 | S1-T1: staff schema, permission config and Gates, panel middleware | Done (CI green) |
 | S1-T2: staff login, rate limit, forced password change, seeded staff | Done (CI green) |
-| S1-T3: audit logger, login/logout audit, admin audit viewer | Built (CI pending) |
+| S1-T3: audit logger, login/logout audit, admin audit viewer | Done (CI green) |
 | Clients, scheduling, operator, specialist, portal, SMS | Not yet (S1–S5) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

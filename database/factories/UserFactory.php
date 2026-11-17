@@ -32,12 +32,18 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'role' => StaffRole::Secretary,
             'is_active' => true,
+            'must_change_password' => false,
         ];
     }
 
     public function role(StaffRole $role): static
     {
         return $this->state(fn (): array => ['role' => $role]);
+    }
+
+    public function mustChangePassword(): static
+    {
+        return $this->state(fn (): array => ['must_change_password' => true]);
     }
 
     public function inactive(): static

@@ -10,6 +10,7 @@ return [
     'nav_styleguide' => 'راهنمای طراحی',
     'submit' => 'بررسی',
     'clear' => 'پاک کردن',
+    'logout' => 'خروج',
     'working_day' => 'روز کاری',
     'non_working_day' => 'روز غیرکاری',
     'weekdays' => [

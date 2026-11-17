@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('role');
             $table->boolean('is_active')->default(true);
+            $table->boolean('must_change_password')->default(false);
             $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'must_change_password',
     ];
 
     /** @var list<string> */
@@ -41,6 +42,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => StaffRole::class,
             'is_active' => 'boolean',
+            'must_change_password' => 'boolean',
             'last_login_at' => 'datetime',
         ];
     }
@@ -56,5 +58,21 @@ class User extends Authenticatable
         $granted = config('permissions.roles.'.$role->value, []);
 
         return is_array($granted) && in_array($permission, $granted, true);
+    }
+
+    /**
+     * The panel this user lands on after login, chosen by permission (not by role name).
+     */
+    public function defaultPanelRoute(): string
+    {
+        if ($this->hasPermission('area.admin')) {
+            return 'admin.home';
+        }
+
+        if ($this->hasPermission('area.operator')) {
+            return 'operator.home';
+        }
+
+        return $this->hasPermission('area.specialist') ? 'specialist.home' : 'login';
     }
 }

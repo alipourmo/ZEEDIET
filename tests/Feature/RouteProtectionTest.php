@@ -29,7 +29,8 @@ test('every route is public by allowlist or protected by auth or an area middlew
             continue;
         }
 
-        $middleware = $route->gatherMiddleware();
+        // The middleware as declared on the route (aliases such as 'auth' and 'area:admin'), not the resolved classes.
+        $middleware = $route->middleware();
         $protected = in_array('auth', $middleware, true)
             || collect($middleware)->contains(fn (string $name): bool => str_starts_with($name, 'area:'));
 
@@ -38,7 +39,7 @@ test('every route is public by allowlist or protected by auth or an area middlew
         }
     }
 
-    expect($unprotected)->toBeEmpty();
+    expect($unprotected)->toBe([]);
 });
 
 test('every public allowlist entry is still a real route', function () {

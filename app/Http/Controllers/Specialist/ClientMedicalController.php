@@ -28,6 +28,8 @@ class ClientMedicalController extends Controller
             'client' => $client,
             'medical' => $medical,
             'formAction' => route('specialist.clients.medical.update', $client),
+            'summaryUrl' => route('specialist.clients.show', $client),
+            'medicalUrl' => route('specialist.clients.medical.edit', $client),
             'backUrl' => route('specialist.clients.show', $client),
         ]);
     }

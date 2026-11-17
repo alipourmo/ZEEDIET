@@ -29,6 +29,8 @@ class ClientMedicalController extends Controller
             'client' => $client,
             'medical' => $medical,
             'formAction' => route('admin.clients.medical.update', $client),
+            'summaryUrl' => route('admin.clients.show', $client),
+            'medicalUrl' => route('admin.clients.medical.edit', $client),
             'backUrl' => route('admin.clients.show', $client),
         ]);
     }

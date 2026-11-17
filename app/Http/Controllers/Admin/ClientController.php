@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateClientRequest;
 use App\Models\Client;
 use App\Models\User;
 use App\Services\Clients\ClientService;
+use App\Support\ClientAlertBadges;
 use App\Support\Digits;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,9 +44,17 @@ class ClientController extends Controller
             });
         }
 
+        // Badges need only the flags, so the allergy text is reduced to yes/no in SQL (see ClientAlertBadges).
+        $query->with(['medical' => fn ($q) => $q->select(ClientAlertBadges::medicalSelect())]);
+
+        $page = $query->paginate(self::PER_PAGE)->withQueryString();
+
         return view('clients.index', [
-            'clients' => $query->paginate(self::PER_PAGE)->withQueryString(),
+            'clients' => $page,
             'term' => $term,
+            'alerts' => Gate::allows('medical.view_alerts')
+                ? $page->getCollection()->mapWithKeys(fn (Client $client) => [$client->getKey() => ClientAlertBadges::fromClient($client)])
+                : null,
         ]);
     }
 
@@ -67,6 +76,8 @@ class ClientController extends Controller
     {
         return view('clients.show', [
             'client' => $client,
+            'summaryUrl' => route('admin.clients.show', $client),
+            'badges' => Gate::allows('medical.view_alerts') ? ClientAlertBadges::fromClient($client) : null,
             'editUrl' => Gate::allows('client.update') ? route('admin.clients.edit', $client) : null,
             'medicalUrl' => Gate::allows('medical.view') ? route('admin.clients.medical.edit', $client) : null,
             'deleteUrl' => Gate::allows('client.delete') ? route('admin.clients.destroy', $client) : null,

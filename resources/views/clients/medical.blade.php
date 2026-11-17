@@ -4,6 +4,7 @@
 
 @section('content')
     <h1 class="page-title">{{ __('clients.medical_title') }} <span dir="ltr">{{ \App\Support\Digits::toPersian($client->code) }}</span></h1>
+    @include('clients._tabs', ['active' => 'medical', 'summaryUrl' => $summaryUrl, 'medicalUrl' => $medicalUrl])
     <p class="lead">{{ __('clients.medical_notice') }}</p>
 
     <form method="POST" action="{{ $formAction }}" class="card form" novalidate>

@@ -5,15 +5,18 @@
 @section('content')
     <div class="page-head">
         <h1 class="page-title">{{ $client->fullName() }} <span dir="ltr">{{ \App\Support\Digits::toPersian($client->code) }}</span></h1>
-        <div class="form__actions">
-            @if ($editUrl)
+        @if ($editUrl)
+            <div class="form__actions">
                 <a class="btn btn--secondary" href="{{ $editUrl }}">{{ __('clients.edit') }}</a>
-            @endif
-            @if ($medicalUrl)
-                <a class="btn btn--secondary" href="{{ $medicalUrl }}">{{ __('clients.medical_link') }}</a>
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
+
+    @if ($badges)
+        <x-alert-badges :badges="$badges" />
+    @endif
+
+    @include('clients._tabs', ['active' => 'summary', 'summaryUrl' => $summaryUrl, 'medicalUrl' => $medicalUrl])
 
     <div class="card">
         <div class="card__body">

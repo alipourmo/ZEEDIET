@@ -285,6 +285,47 @@ main {
     border-color: transparent;
 }
 
+.badge--alert {
+    background: #FBE5E5;
+    color: var(--danger);
+    border-color: transparent;
+}
+
+.badge--info {
+    background: var(--blue-soft);
+    color: var(--blue-ink);
+    border-color: transparent;
+}
+
+.badge--neutral {
+    background: var(--surface);
+    color: var(--muted);
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--line);
+    margin-block: 1rem;
+}
+
+.tabs__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: 1rem;
+    border-bottom: 2px solid transparent;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.tabs__link[aria-current="page"] {
+    border-bottom-color: var(--brand);
+    color: var(--brand-dark);
+    font-weight: 600;
+}
+
 .badge--cancelled,
 .badge--no_show {
     background: #F3EEEF;

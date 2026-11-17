@@ -274,3 +274,11 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Search** (`q`) matches first name, last name, code and mobile with `LIKE`. `%`, `_` and `\` are escaped so a search cannot act as a wildcard. Persian and ASCII digits are the same after `NormalizeInput`.
 - **Policies:** none. Authorisation uses the Gates from `config/permissions.php` (`can:` middleware and `FormRequest::authorize()`), as decided in S1-T1.
 - **Contraindications** are stored as a JSON list of keys from `config/clinic.php`, and labels come from `lang/fa/clients.php`.
+
+## 2026-11-17 — S1-T5: alert badges and the medical tab
+
+- **Badges are flags only.** `App\Support\ClientAlertBadges` gives allergy yes/no, the contraindication keys, and the pregnancy status (spec section 7.7). The allergy text is reduced to a boolean in SQL (`medicalSelect()`), so the free text never reaches PHP for badge rendering. A test checks this.
+- **Visibility:** the badges need `medical.view_alerts`. All four roles have it, so the secretary and the specialist see them, and the operator will see them on its screens in S2. The free text needs `medical.view`.
+- **Medical tab:** the file page has a tab bar (Summary and Medical). The Medical tab appears only when the viewer holds `medical.view`. The SPEC §8.2 wording says "admin only". The permission matrix (§5) also grants the specialist `medical.view`, so the specialist sees the tab on their own file at `/specialist`. The Gate decides, not the role name.
+- **No audit row for badges.** Badges show no medical text, and a list page would write one row per client on every load. Opening the medical record is still audited (S1-T4). If the clinic wants list views logged, that is a change for S5.
+- **List:** the client list loads the medical flags in a single query, not one per row (tested).

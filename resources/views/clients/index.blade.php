@@ -33,6 +33,9 @@
                         <th scope="col">{{ __('clients.col_name') }}</th>
                         <th scope="col">{{ __('clients.col_mobile') }}</th>
                         <th scope="col">{{ __('clients.col_status') }}</th>
+                        @if ($alerts)
+                            <th scope="col">{{ __('alerts.column') }}</th>
+                        @endif
                         <th scope="col"><span class="sr-only">{{ __('clients.col_actions') }}</span></th>
                     </tr>
                 </thead>
@@ -43,6 +46,9 @@
                             <td>{{ $client->fullName() }}</td>
                             <td dir="ltr">{{ \App\Support\Digits::toPersian($client->mobile) }}</td>
                             <td>{{ __('clients.status_options.'.$client->status->value) }}</td>
+                            @if ($alerts)
+                                <td><x-alert-badges :badges="$alerts->get($client->getKey())" /></td>
+                            @endif
                             <td><a href="{{ route('admin.clients.show', $client) }}">{{ __('clients.open') }}</a></td>
                         </tr>
                     @endforeach

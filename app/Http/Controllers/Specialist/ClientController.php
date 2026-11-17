@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Specialist;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Support\ClientAlertBadges;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -19,6 +20,8 @@ class ClientController extends Controller
     {
         return view('clients.show', [
             'client' => $client,
+            'summaryUrl' => route('specialist.clients.show', $client),
+            'badges' => Gate::allows('medical.view_alerts') ? ClientAlertBadges::fromClient($client) : null,
             'editUrl' => null,
             'medicalUrl' => Gate::allows('medical.view') ? route('specialist.clients.medical.edit', $client) : null,
             'deleteUrl' => null,

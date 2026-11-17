@@ -8,7 +8,7 @@
     <form method="POST" action="{{ route('admin.clients.store') }}" class="card form" novalidate>
         @csrf
         <div class="card__body">
-            @include('admin.clients._form', ['client' => null])
+            @include('clients._form', ['client' => null])
             <div class="form__actions">
                 <x-button type="submit">{{ __('clients.save') }}</x-button>
                 <a class="btn btn--secondary" href="{{ route('admin.clients.index') }}">{{ __('clients.back') }}</a>

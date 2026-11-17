@@ -9,7 +9,7 @@
         @csrf
         @method('PUT')
         <div class="card__body">
-            @include('admin.clients._form', ['client' => $client])
+            @include('clients._form', ['client' => $client])
             <div class="form__actions">
                 <x-button type="submit">{{ __('clients.save') }}</x-button>
                 <a class="btn btn--secondary" href="{{ route('admin.clients.show', $client) }}">{{ __('clients.back') }}</a>

@@ -35,9 +35,9 @@ function clientRouteMatrix(): array
 $roles = ['admin', 'secretary', 'operator', 'specialist'];
 
 test('each role gets the expected status on each client route', function (string $method, string $uri, array $codes) use ($roles) {
-    $client = makeClient();
-
     foreach ($roles as $index => $role) {
+        // A fresh client per role: an allowed delete by one role must not hide the route from the next.
+        $client = makeClient();
         $user = User::factory()->role(StaffRole::from($role))->create();
 
         $response = $this->actingAs($user)->call($method, str_replace('{client}', (string) $client->getKey(), $uri));

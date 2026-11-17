@@ -6,7 +6,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 
 ## Status
 
-**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is in progress: S1-T1 to S1-T4 are built.
+**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is in progress: S1-T1 to S1-T4 are done (CI green).
 
 | Area | State |
 |---|---|

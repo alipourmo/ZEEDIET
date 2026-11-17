@@ -80,7 +80,10 @@ abstract class ClientRequest extends FormRequest
         }
 
         if ($existing !== null && $existing->consent_photos_at !== null) {
-            return $existing->consent_photos_at;
+            /** @var Carbon $given the datetime cast on Client makes this a Carbon */
+            $given = $existing->consent_photos_at;
+
+            return $given;
         }
 
         return now();

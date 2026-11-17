@@ -11,6 +11,10 @@ return [
     'submit' => 'بررسی',
     'clear' => 'پاک کردن',
     'logout' => 'خروج',
+    'previous' => 'قبلی',
+    'next' => 'بعدی',
+    'page_of' => 'صفحه :page از :last',
+    'pagination' => 'صفحه‌بندی',
     'working_day' => 'روز کاری',
     'non_working_day' => 'روز غیرکاری',
     'weekdays' => [

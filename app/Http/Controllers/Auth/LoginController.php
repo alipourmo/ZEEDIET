@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use App\Support\Digits;
 use App\Support\Mobile;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +26,8 @@ class LoginController extends Controller
     private const MAX_ATTEMPTS = 5;
 
     private const DECAY_SECONDS = 60;
+
+    public function __construct(private readonly AuditLogger $audit) {}
 
     public function create(): View
     {
@@ -65,6 +69,7 @@ class LoginController extends Controller
         }
 
         $user->forceFill(['last_login_at' => now()])->save();
+        $this->audit->log(AuditAction::Login, $user, null, null, $user);
 
         if ($user->must_change_password) {
             return redirect()->route('password.change')->with('warning', __('auth.must_change_password'));
@@ -75,6 +80,11 @@ class LoginController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+        if ($user instanceof User) {
+            $this->audit->log(AuditAction::Logout, $user, null, null, $user);
+        }
+
         Auth::guard()->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -15,6 +17,8 @@ use Illuminate\View\View;
  */
 class PasswordController extends Controller
 {
+    public function __construct(private readonly AuditLogger $audit) {}
+
     public function edit(): View
     {
         return view('auth.change-password');
@@ -30,6 +34,9 @@ class PasswordController extends Controller
             'password' => $request->validated('password'),
             'must_change_password' => false,
         ])->save();
+
+        // The changes are not logged: the password, old or new, never goes into audit_logs.
+        $this->audit->log(AuditAction::PasswordChange, $user, null, null, $user);
 
         $request->session()->regenerate();
 

@@ -322,6 +322,17 @@ main {
     border-radius: var(--radius);
 }
 
+.field select {
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    font-size: 1.0625rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
 .field input[aria-invalid="true"] {
     border-color: var(--danger);
 }
@@ -412,4 +423,62 @@ main {
     .site-nav {
         display: none;
     }
+}
+
+.filters__grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    align-items: end;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    margin-block: 1rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg);
+}
+
+.table th,
+.table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    text-align: start;
+    vertical-align: top;
+}
+
+.table th {
+    font-weight: 600;
+    background: var(--surface);
+}
+
+.changes {
+    margin: 0;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+}
+
+.empty-state {
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.pager {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin-block: 1rem;
+}
+
+.pager__link {
+    color: var(--blue-ink);
+}
+
+.pager__link.is-disabled {
+    color: var(--muted);
 }

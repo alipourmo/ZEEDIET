@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\PanelController;
@@ -28,6 +29,11 @@ Route::middleware('auth')->group(function (): void {
 // Panels (spec section 8). Access is checked by the area:* Gate (config/permissions.php).
 Route::middleware(['auth', 'area:admin'])->group(function (): void {
     Route::get('/admin', [PanelController::class, 'admin'])->name('admin.home');
+
+    // Admin only, by the audit.view Gate (spec sections 5 and 8.2).
+    Route::get('/admin/audit', [AuditLogController::class, 'index'])
+        ->middleware('can:audit.view')
+        ->name('admin.audit.index');
 });
 
 Route::middleware(['auth', 'area:operator'])->group(function (): void {

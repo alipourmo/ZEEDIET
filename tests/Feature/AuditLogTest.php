@@ -38,3 +38,18 @@ test('an audit log entry cannot be deleted through the model', function () {
     expect(fn () => $log->delete())->toThrow(LogicException::class);
     expect(AuditLog::count())->toBe(1);
 });
+
+test('an audit log entry cannot be force-deleted', function () {
+    $log = makeAuditLog();
+
+    expect(fn () => $log->forceDelete())->toThrow(LogicException::class);
+    expect(AuditLog::count())->toBe(1);
+});
+
+test('bulk updates and deletes on audit_logs are refused', function () {
+    makeAuditLog();
+
+    expect(fn () => AuditLog::query()->update(['action' => 'delete']))->toThrow(LogicException::class);
+    expect(fn () => AuditLog::query()->delete())->toThrow(LogicException::class);
+    expect(AuditLog::count())->toBe(1);
+});

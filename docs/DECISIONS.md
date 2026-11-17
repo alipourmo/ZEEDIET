@@ -227,3 +227,26 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Choice:** `config/filesystems.php` sets `'serve' => false` on the `local` disk (storage/app/private). The framework then does not register the `storage/{path}` GET and PUT routes.
 - **Reason:** Those routes would serve private files with only a signed-URL check. Spec section 10.6 wants uploads served by an authorized controller with short-lived signed URLs. That controller is built with uploads in V1.0. Until then, no route should expose the disk.
 - **Found by:** `RouteProtectionTest`, which failed on the two framework routes.
+
+## 2026-11-17 — S1-T3: AuditLogger signature and actor rules
+
+- **Choice:** `AuditLogger::log(AuditAction $action, Model $subject, ?int $clientId, ?array $changes, ?User $actor)`. The actor defaults to the signed-in staff member, or to `system` when nobody is signed in. Client actors (the portal, S5) will need a parameter added then.
+- **Changes:** Stored as given, with any key containing `password`, `token` or `secret` removed at every depth (spec section 6.5). Convention: `['old' => [...], 'new' => [...]]`.
+- **Spec 7.8 deviation:** Auth events (login, logout, password change) are logged by their controllers, because the auth flow has no service of its own. Business services (clients, sessions, payments and so on) call the logger from the service.
+- **Not logged:** Failed login attempts. The subject is unknown and no account is changed. Logging them would help investigate guessing, so this is an open question for the clinic.
+
+## 2026-11-17 — S1-T3: action list extended
+
+- The spec's action list (login, logout, view, create, update, delete, publish, export) is the enum `App\Enums\AuditAction`. `password_change` and `password_reset` are added, because spec section 7.8 asks for password resets to be logged.
+
+## 2026-11-17 — S1-T3: append-only is enforced in three places
+
+- The `AuditLog` model refuses `update()`, `delete()` and `forceDelete()` (model events).
+- `AuditLogBuilder` (used by `AuditLog::query()`) refuses bulk `update()` and `delete()`.
+- Open item: raw `DB::table('audit_logs')` queries are not blocked. A database-level trigger on MySQL (production only) would close that. Add it to the S5 hardening task.
+
+## 2026-11-17 — S1-T3: audit viewer
+
+- Route `GET /admin/audit` (`admin.audit.index`) is inside the admin panel group and also has `can:audit.view`. The Gate allows the admin role only (spec section 5).
+- Filters: actor, client ID, action, and a Jalali date range (`YYYY/MM/DD`, both ends inclusive, Tehran time). Persian digits are accepted (NormalizeInput).
+- 50 entries per page. Actor names come from one extra query per page, not one per row.

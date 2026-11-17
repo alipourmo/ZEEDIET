@@ -45,6 +45,24 @@ class AuditLog extends Model
         ];
     }
 
+    /**
+     * Bulk queries (AuditLog::query()->update()/delete()) use AuditLogBuilder, which refuses them.
+     */
+    public function newEloquentBuilder($query): AuditLogBuilder
+    {
+        return new AuditLogBuilder($query);
+    }
+
+    /**
+     * A readable label for the subject, e.g. "کاربر" for a user. Falls back to the class name.
+     */
+    public function subjectLabel(): string
+    {
+        $key = 'audit.subjects.'.class_basename($this->subject_type);
+
+        return trans()->has($key) ? __($key) : class_basename($this->subject_type);
+    }
+
     protected static function booted(): void
     {
         static::updating(function (): void {

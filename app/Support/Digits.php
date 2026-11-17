@@ -28,6 +28,7 @@ final class Digits
 
     /** Arabic yeh U+064A and kaf U+0643 mapped to Persian yeh U+06CC and kaf U+06A9. */
     private const ARABIC_LETTERS = ["\u{064A}", "\u{0643}"];
+
     private const PERSIAN_LETTERS = ["\u{06CC}", "\u{06A9}"];
 
     /**

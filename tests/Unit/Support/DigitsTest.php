@@ -5,11 +5,11 @@ declare(strict_types=1);
 use App\Support\Digits;
 
 test('persian digits convert to ascii', function () {
-    expect(Digits::toAscii("۱۲۳"))->toBe('123');
+    expect(Digits::toAscii('۱۲۳'))->toBe('123');
 });
 
 test('arabic-indic digits convert to ascii', function () {
-    expect(Digits::toAscii("١٢٣"))->toBe('123');
+    expect(Digits::toAscii('١٢٣'))->toBe('123');
 });
 
 test('arabic yeh and kaf map to persian letters', function () {

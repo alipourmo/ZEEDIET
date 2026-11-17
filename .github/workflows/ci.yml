@@ -34,6 +34,17 @@ jobs:
       - name: PHPStan (level 6)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github
 
+      - name: Diagnose (temporary)
+        if: always()
+        run: |
+          {
+            echo "== pest version"; vendor/bin/pest --version 2>&1 | tail -c 1500
+            echo "== list tests"; vendor/bin/pest --list-tests 2>&1 | tail -c 3000
+            echo "== artisan about"; php artisan about --only=environment --no-ansi 2>&1 | tail -c 2000
+            echo "== artisan route:list"; php artisan route:list --no-ansi 2>&1 | tail -c 2000
+          } > build-diag.txt 2>&1 || true
+          echo "::notice title=diag::$(base64 -w0 build-diag.txt)"
+
       - name: Pest
         run: |
           mkdir -p build

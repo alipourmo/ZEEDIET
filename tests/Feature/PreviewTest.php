@@ -45,8 +45,7 @@ test('health endpoint returns ok', function () {
         ->assertExactJson(['status' => 'ok']);
 });
 
-test('robots.txt is served as a disallow-all file', function () {
-    $this->get('/robots.txt')
-        ->assertOk()
-        ->assertSee('Disallow: /', false);
+test('robots.txt disallows all crawlers', function () {
+    // Static files in public/ are served by the web server, not the router, so read the file directly.
+    expect(file_get_contents(public_path('robots.txt')))->toContain('Disallow: /');
 });

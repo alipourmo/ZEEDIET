@@ -36,7 +36,7 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
 
     // Clients (spec sections 6.1 and 8.2). Each route is checked by its own Gate. The medical record needs
     // medical.view / medical.update, which secretaries do not have. Specialists use /specialist/clients.
-    Route::prefix('clients')->name('admin.clients.')->group(function (): void {
+    Route::prefix('admin/clients')->name('admin.clients.')->group(function (): void {
         Route::get('/', [ClientController::class, 'index'])->middleware('can:client.view')->name('index');
         Route::get('/create', [ClientController::class, 'create'])->middleware('can:client.create')->name('create');
         Route::post('/', [ClientController::class, 'store'])->middleware('can:client.create')->name('store');

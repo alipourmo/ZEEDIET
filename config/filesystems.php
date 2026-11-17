@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Off until V1.0 uploads (spec section 10.6): serving private files needs an authorized controller and signed URLs.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

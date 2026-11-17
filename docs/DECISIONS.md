@@ -221,3 +221,9 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 ## 2026-11-17 — S1-T2: route protection test added early
 
 - `tests/Feature/RouteProtectionTest.php` (spec section 10.5) walks all routes. Every route must be on the public allowlist or carry `auth` or an `area:` middleware. The allowlist is in the test, so adding a public route is an explicit change.
+
+## 2026-11-17 — S1-T2: the private disk does not serve files
+
+- **Choice:** `config/filesystems.php` sets `'serve' => false` on the `local` disk (storage/app/private). The framework then does not register the `storage/{path}` GET and PUT routes.
+- **Reason:** Those routes would serve private files with only a signed-URL check. Spec section 10.6 wants uploads served by an authorized controller with short-lived signed URLs. That controller is built with uploads in V1.0. Until then, no route should expose the disk.
+- **Found by:** `RouteProtectionTest`, which failed on the two framework routes.

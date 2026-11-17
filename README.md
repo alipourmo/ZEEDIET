@@ -11,7 +11,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | Area | State |
 |---|---|
 | Specification | Done (`docs/SPEC.md`) |
-| Laravel 13 project (PHP 8.4 pending owner decision) | Done, first CI run pending |
+| Laravel 13 project (PHP 8.4, owner approved) | Done, first CI run pending |
 | Date, digit and mobile helpers (`app/Support`) | Done and verified |
 | Blade directives `@fa`, `@jdate`, `@money` | Done |
 | RTL layout, Vazirmatn, CSS tokens, card/button/badge | Done |
@@ -23,7 +23,7 @@ Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred w
 
 ## Requirements
 
-- PHP 8.4 (pending owner decision, see DECISIONS) with `mbstring`, `intl`, `zip`, `pdo_sqlite` (or `pdo_mysql` for MySQL), `openssl`, `tokenizer`, `xml`, `ctype`, `fileinfo`
+- PHP 8.4 with `mbstring`, `intl`, `zip`, `pdo_sqlite` (or `pdo_mysql` for MySQL), `openssl`, `tokenizer`, `xml`, `ctype`, `fileinfo`
 - Composer 2
 - MySQL 8 (utf8mb4) for the real application. The local default is SQLite.
 

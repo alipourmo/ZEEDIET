@@ -63,11 +63,11 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Reason:** These cannot be verified in this sandbox. Adding unverified scaffolding would make the repository look runnable when it is not.
 - **Status:** Superseded. The Laravel skeleton, CI workflow and layout are now in place (see the S0 entries below).
 
-## 2026-11-17 — Laravel 13 (owner approved) and PHP 8.4 (pending owner decision)
+## 2026-11-17 — Laravel 13 and PHP 8.4 (owner approved)
 
 - **Question:** Which Laravel version should the project use now that Laravel 11 is outdated?
 - **Choice:** Laravel 13 (`laravel/framework ^13.0`), taken from the official `laravel/laravel` skeleton. The owner approved Laravel 13.
-- **Consequence (not yet approved):** `pest-plugin-laravel` 5.x is the only plugin line that supports Laravel 13. It needs Pest 5, which needs PHP 8.4 (`"php": "^8.4"`). The spec says PHP 8.3. The owner must choose: (a) keep PHP 8.4 and Pest 5 (current `composer.json`), or (b) PHP 8.3 with Laravel 12 and Pest 4 (`pest-plugin-laravel` 4.x). Option (b) reverses the approved Laravel 13.
+- **PHP version (owner decision: 8.4):** `pest-plugin-laravel` 5.x is the only plugin line that supports Laravel 13. It needs Pest 5, which needs PHP 8.4 (`"php": "^8.4"`). The spec (v1.0) said PHP 8.3. This is a deliberate deviation from the spec, approved by the owner. The alternative was PHP 8.3 with Laravel 12 and Pest 4, which would have reversed the Laravel 13 approval.
 - **Other tools:** Larastan ^3.15 for PHPStan level 6, and Pint ^1.27.
 
 ## 2026-11-17 — Vercel deployment uses the Container runtime, not vercel-php (proposed, pending owner approval)
@@ -127,3 +127,9 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 
 - Verified in this sandbox: all support helpers (`scripts/verify-support.php`, 38 checks on PHP 8.3, including the new `Display` checks). All 38 PHP files parse (`TOKEN_PARSE`).
 - Not verified here: Blade rendering, Pest, Pint, PHPStan, the Docker image and the Vercel build. The GitHub Actions CI and the Vercel build are the first real checks.
+
+## 2026-11-17 — PHP 8.4 confirmed by the owner
+
+- **Question:** Keep PHP 8.4 (Pest 5, Laravel 13) or switch to PHP 8.3 (Laravel 12, Pest 4)?
+- **Choice:** PHP 8.4, as chosen by the owner. The Dockerfile, CI workflow and `composer.json` already target 8.4.
+- **Reason:** Owner choice. Keeps Laravel 13, the approved version.

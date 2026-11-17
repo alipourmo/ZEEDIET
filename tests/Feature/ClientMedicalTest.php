@@ -97,3 +97,20 @@ test('the specialist file has no admin edit links', function () {
         ->assertDontSee(route('admin.clients.edit', $client))
         ->assertDontSee(route('admin.clients.index'));
 });
+
+test('after a failed save, an unticked contraindication stays unticked', function () {
+    $client = makeClient();
+    $client->medical->update(['device_contraindications' => ['pacemaker']]);
+    $specialist = User::factory()->role(StaffRole::Specialist)->create();
+
+    // The allergy text is longer than the limit, so the save fails. The pacemaker box is unticked.
+    $this->actingAs($specialist)->from(route('specialist.clients.medical.edit', $client))
+        ->put(route('specialist.clients.medical.update', $client), [
+            'food_allergies' => str_repeat('آ', 5001),
+            'device_contraindications' => [],
+        ])
+        ->assertSessionHasErrors('food_allergies');
+
+    $this->actingAs($specialist)->get(route('specialist.clients.medical.edit', $client))
+        ->assertDontSee('value="pacemaker" checked', false);
+});

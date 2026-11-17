@@ -22,7 +22,8 @@
             <fieldset class="field field--wide">
                 <legend>{{ __('clients.device_contraindications') }}</legend>
                 <p class="muted">{{ __('clients.device_contraindications_hint') }}</p>
-                @php $selected = old('device_contraindications', $medical->device_contraindications ?? []) @endphp
+                {{-- After a failed save, only the boxes the user ticked are shown ticked. --}}
+                @php $selected = $errors->any() ? old('device_contraindications', []) : ($medical->device_contraindications ?? []) @endphp
                 @foreach (config('clinic.contraindication_keys') as $key)
                     <label class="check">
                         <input type="checkbox" name="device_contraindications[]" value="{{ $key }}" @checked(in_array($key, $selected, true))>

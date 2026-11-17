@@ -105,7 +105,7 @@
         @endif
 
         <label class="check">
-            <input type="checkbox" name="consent_photos" value="1" @checked(old('consent_photos', $client?->consent_photos_at !== null))>
+            <input type="checkbox" name="consent_photos" value="1" @checked($errors->any() ? (bool) old('consent_photos') : ($client?->consent_photos_at !== null))>
             {{ __('clients.consent_photos') }}
         </label>
         <p class="muted">{{ __('clients.consent_photos_hint') }}</p>

@@ -168,3 +168,14 @@ test('the gates for clients follow config/permissions.php', function () {
     expect(Gate::forUser($secretary)->allows('medical.view'))->toBeFalse();
     expect(Gate::forUser($secretary)->allows('client.update'))->toBeTrue();
 });
+
+test('after a failed save, an unticked photo consent stays unticked', function () {
+    $admin = adminUser();
+
+    $this->actingAs($admin)->from(route('admin.clients.create'))
+        ->post(route('admin.clients.store'), clientPayload(['first_name' => '', 'consent_photos' => null]))
+        ->assertSessionHasErrors('first_name');
+
+    $this->actingAs($admin)->get(route('admin.clients.create'))
+        ->assertDontSee('name="consent_photos" value="1" checked', false);
+});

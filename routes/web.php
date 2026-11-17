@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\Catalog\DeviceController;
+use App\Http\Controllers\Admin\Catalog\RoomController;
+use App\Http\Controllers\Admin\Catalog\ServiceController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientMedicalController;
 use App\Http\Controllers\Auth\LoginController;
@@ -47,6 +50,20 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
         Route::get('/{client}/medical', [ClientMedicalController::class, 'edit'])->middleware('can:medical.view')->name('medical.edit');
         Route::put('/{client}/medical', [ClientMedicalController::class, 'update'])->middleware('can:medical.update')->name('medical.update');
     });
+
+    // Catalog (spec sections 6.2 and 8.2). Admin only: the catalog.manage Gate. No delete route: items are deactivated.
+    Route::resource('admin/services', ServiceController::class)
+        ->names('admin.services')
+        ->only(['index', 'create', 'store', 'edit', 'update'])
+        ->middleware('can:catalog.manage');
+    Route::resource('admin/devices', DeviceController::class)
+        ->names('admin.devices')
+        ->only(['index', 'create', 'store', 'edit', 'update'])
+        ->middleware('can:catalog.manage');
+    Route::resource('admin/rooms', RoomController::class)
+        ->names('admin.rooms')
+        ->only(['index', 'create', 'store', 'edit', 'update'])
+        ->middleware('can:catalog.manage');
 
     // Admin only, by the audit.view Gate (spec sections 5 and 8.2).
     Route::get('/admin/audit', [AuditLogController::class, 'index'])

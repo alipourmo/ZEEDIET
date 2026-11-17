@@ -282,3 +282,13 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Medical tab:** the file page has a tab bar (Summary and Medical). The Medical tab appears only when the viewer holds `medical.view`. The SPEC §8.2 wording says "admin only". The permission matrix (§5) also grants the specialist `medical.view`, so the specialist sees the tab on their own file at `/specialist`. The Gate decides, not the role name.
 - **No audit row for badges.** Badges show no medical text, and a list page would write one row per client on every load. Opening the medical record is still audited (S1-T4). If the clinic wants list views logged, that is a change for S5.
 - **List:** the client list loads the medical flags in a single query, not one per row (tested).
+
+## 2026-11-17 — S1-T6: catalog
+
+- **Scope:** services, devices and rooms (spec section 6.2), admin only (`catalog.manage`, routes under `/admin/services`, `/admin/devices`, `/admin/rooms`). Schedules and holidays are also under `catalog.manage` in §6.2, but they belong to the availability work in S2, so they are not built here.
+- **No delete.** Catalog items are deactivated (`is_active`), never deleted. The routes have no `destroy`, and a DELETE request returns 405 (tested). Appointments (S2) will refer to services, devices and rooms, so deleting one would break history. Inactive items are not offered for new bookings (S2).
+- **Catalog changes are not audited.** Spec section 7.8 lists the events to audit, and the catalog is not among them. Adding it is a small change if the clinic wants it.
+- **Prices** are whole Toman in `default_price`. Separators (`150,000`, `150٬000`) are removed before validation. An empty price means "not set yet".
+- **Example seed data** (`CatalogSeeder`, idempotent, found by name): three services from spec section 15 with durations 30, 20 and 45 minutes, two example devices with contraindications, two rooms. Names, durations, device contraindications and room names are examples for the clinic to confirm. Prices are left empty.
+- **Spec references:** §12 says the seeders are in "section 14". The seed list is in §15.
+- **Checkboxes after a failed save.** `old()` falls back to the saved value when a checkbox is absent from the submitted form. An unticked box therefore came back ticked after a validation error elsewhere on the form. Convention now used in every form with checkboxes: `$errors->any() ? (bool) old('x') : <saved value>`. Fixed on the photo consent and contraindication boxes (S1-T4) and on the catalog forms (tested).

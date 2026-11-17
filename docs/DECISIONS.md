@@ -150,3 +150,33 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 
 - Added the missing S0 items: `@jdatetime` directive, input-normalising middleware, flash messages in the layout, and `Model::preventLazyLoading()` outside production.
 - S0 is complete when the CI run on this branch passes (spec S0 acceptance: CI green on a fresh clone). The four acceptance checks themselves were already covered by the support tests and `scripts/verify-support.php`.
+
+## 2026-11-17 — S1-T1: users table rewritten in place
+
+- **Question:** The S0 skeleton created `users` with `email`, `email_verified_at` and a `password_reset_tokens` table. Spec section 6.1 needs mobile login and a role column.
+- **Choice:** The `users` migration is rewritten for the staff schema (name, mobile unique, password, role, is_active, last_login_at). `password_reset_tokens` is dropped. The `sessions` table stays, because the database session driver is needed to cut sessions on deactivation (spec section 7.6).
+- **Reason:** No database has ever been migrated outside the test suite, so no deployed schema is changed. Staff passwords are reset by an admin (section 7.6), not by email.
+
+## 2026-11-17 — S1-T1: panel access uses area Gates and an area: middleware alias
+
+- **Question:** Spec section 10 asks for "middleware group per area". Spec section 5 says every check goes through the Gates in config/permissions.php.
+- **Choice:** Each panel has an `area.*` Gate (`area.admin`, `area.operator`, `area.specialist`), listed in config/permissions.php. The route middleware `area:admin` (and `area:operator`, `area:specialist`) checks the matching Gate. Admin and secretary share the admin area. Admin is not granted the operator or specialist area.
+- **Reason:** One mechanism (Gates) for both panel access and feature access. Route groups alone would not express per-role rules.
+- **Open:** Guests get 403 for now. S1-T2 adds the login route and redirects guests to it.
+
+## 2026-11-17 — S1-T1: sms.templates.manage is admin-only
+
+- **Question:** Spec section 5 lists `sms.templates.manage` in the permission keys, but not in the matrix. Section 8.2 puts SMS templates in the admin area.
+- **Choice:** Admin only.
+- **Reason:** Conservative default. The clinic can widen it later in config/permissions.php.
+
+## 2026-11-17 — S1-T1: audit log immutability is enforced in the model
+
+- **Question:** Spec section 6.5 says audit_logs is append-only, with no update or delete path. The database could enforce this with triggers, but triggers differ between SQLite (tests) and MySQL (production).
+- **Choice:** `AuditLog` throws on `update()` and `delete()`. There is no `updated_at` column. Code must not use raw query-builder updates or deletes on audit_logs. Code review checks this, and a later task can add a test that scans for them.
+- **Reason:** Covers the normal code paths now. Full database enforcement can be added with MySQL-only migrations later, recorded here as an open item.
+
+## 2026-11-17 — S1-T1: Feature tests migrate a fresh database
+
+- **Choice:** `tests/Pest.php` applies `RefreshDatabase` to every test in `tests/Feature`. Every Feature test therefore runs all migrations on an in-memory SQLite database.
+- **Reason:** A broken migration fails the suite. This is the check on "migrations are reversible on a fresh database" in spec section 19, for the up direction. Reversibility (down) is checked by hand until a rollback test is added.

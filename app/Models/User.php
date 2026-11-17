@@ -1,32 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\StaffRole;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
+/**
+ * A staff account (admin, secretary, operator or specialist). Clients are a separate model.
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
+
+    /** @var list<string> */
+    protected $fillable = [
+        'name',
+        'mobile',
+        'password',
+        'role',
+        'is_active',
+    ];
+
+    /** @var list<string> */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => StaffRole::class,
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Whether this user's role grants the permission. Used by the Gates in AuthServiceProvider.
+     * Controllers and views must not compare roles directly; they use can: and @can.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        $granted = config('permissions.roles.'.$this->role->value, []);
+
+        return is_array($granted) && in_array($permission, $granted, true);
     }
 }

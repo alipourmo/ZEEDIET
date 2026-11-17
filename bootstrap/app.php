@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAreaAccess;
 use App\Http\Middleware\NormalizeInput;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -12,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Panel access: route middleware 'area:admin', 'area:operator' or 'area:specialist' (spec section 8).
+        $middleware->alias([
+            'area' => EnsureAreaAccess::class,
+        ]);
+
         $middleware->web(append: [
             NormalizeInput::class,
         ]);

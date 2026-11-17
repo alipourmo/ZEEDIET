@@ -79,7 +79,11 @@ abstract class ClientRequest extends FormRequest
             return null;
         }
 
-        return $existing?->consent_photos_at ?? now();
+        if ($existing !== null && $existing->consent_photos_at !== null) {
+            return $existing->consent_photos_at;
+        }
+
+        return now();
     }
 
     protected function clientIdToIgnore(): ?int

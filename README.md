@@ -6,38 +6,48 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 
 ## Status
 
-**Sprint S0 is partly done. The application cannot be run yet.**
+**Sprint S0 is partly done.** The Laravel 13 project, the Persian layout and the preview pages are in place. The first CI run and the first Vercel deployment have not happened yet.
 
 | Area | State |
 |---|---|
 | Specification | Done (`docs/SPEC.md`) |
+| Laravel 13 project (PHP 8.4 pending owner decision) | Done, first CI run pending |
 | Date, digit and mobile helpers (`app/Support`) | Done and verified |
-| Clinic config and env example | Done |
-| Laravel project skeleton, Pint, PHPStan, CI | Not yet |
-| UI layout, styleguide | Not yet |
+| Blade directives `@fa`, `@jdate`, `@money` | Done |
+| RTL layout, Vazirmatn, CSS tokens, card/button/badge | Done |
+| Preview pages (home, Jalali tool, mobile tool, `/_styleguide` local) | Done |
+| Vercel container preview | Files ready, deployment blocked (see DECISIONS) |
 | Clients, scheduling, operator, specialist, portal, SMS | Not yet (S1–S5) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).
 
-## Requirements (target)
+## Requirements
 
-- PHP 8.3 with the `pdo_mysql`, `mbstring`, `intl`, `curl`, `openssl` and `json` extensions
+- PHP 8.4 (pending owner decision, see DECISIONS) with `mbstring`, `intl`, `zip`, `pdo_sqlite` (or `pdo_mysql` for MySQL), `openssl`, `tokenizer`, `xml`, `ctype`, `fileinfo`
 - Composer 2
-- MySQL 8 (utf8mb4)
-- Node.js 20+ (only if front-end assets are built later; Chart.js and Vazirmatn are self-hosted)
+- MySQL 8 (utf8mb4) for the real application. The local default is SQLite.
 
-## Setup (after the Laravel skeleton lands in S0)
+## Local setup
 
 ```bash
 cp .env.example .env
 composer install
 php artisan key:generate
-php artisan migrate
-php artisan db:seed        # idempotent; prints one random password per seeded staff user once
 php artisan serve
 ```
 
-Then open `/login`.
+Open `http://127.0.0.1:8000`. In `local` environment the style guide is at `/_styleguide`.
+
+## Checks
+
+```bash
+composer lint        # Pint (style)
+composer stan        # PHPStan level 6 (Larastan)
+composer test        # Pest
+php scripts/verify-support.php   # dependency-free checks for app/Support (any PHP 8.3+)
+```
+
+CI (`.github/workflows/ci.yml`) runs Pint, PHPStan and Pest on every push.
 
 ## Environment variables
 
@@ -45,34 +55,33 @@ See `.env.example` for the full list with comments. The important ones:
 
 | Variable | Purpose |
 |---|---|
-| `APP_ENV`, `APP_DEBUG`, `APP_URL` | Environment. Production forces secure cookies and HSTS (spec section 10). |
+| `APP_KEY` | Encryption key. Required in production. Set it in the Vercel project, never in the repository. |
+| `APP_ENV`, `APP_DEBUG`, `APP_URL` | Environment. Production uses `APP_DEBUG=false`. |
 | `APP_TIMEZONE` | `Asia/Tehran` |
 | `APP_LOCALE` | `fa` |
-| `DB_*` | MySQL 8 connection. Use a least-privilege user in production. |
-| `SESSION_DRIVER`, `QUEUE_CONNECTION` | `database` |
-| `SMS_DRIVER` | `log` (local/testing only; writes to `storage/logs/sms.log` with OTP codes redacted) or `kavenegar` |
+| `DB_*` | Database. The Vercel preview runs without one. |
+| `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` | The container preset sets `array`, `array` and `sync`. |
+| `LOG_CHANNEL` | `stderr` in the container |
+| `SMS_DRIVER` | `log` (local/testing only; OTP codes are redacted) or `kavenegar` |
 | `KAVENEGAR_API_KEY`, `KAVENEGAR_SENDER` | SMS provider credentials. Never commit. |
 | `CLINIC_NAME`, `CLINIC_REMINDER_HOURS_BEFORE` | Clinic settings (`config/clinic.php`) |
-| `BACKUP_ENCRYPTION_KEY`, `BACKUP_DISK` | Backup encryption and off-server disk |
+| `BACKUP_ENCRYPTION_KEY`, `BACKUP_DISK` | Backup encryption and off-server disk (S5) |
 
-## Verifying the helpers without Composer
+## Deployment
 
-The date, digit and mobile helpers in `app/Support` have no dependencies. They can be checked with any PHP 8.3+ CLI:
+### Vercel preview (feedback only)
 
-```bash
-php scripts/verify-support.php
-```
+The preview runs as a container on Vercel (FrankenPHP, PHP 8.4), following Vercel's Laravel guide. Files: `Dockerfile`, `Caddyfile`, `vercel.json`, `.dockerignore`. It has no database, and sessions and cache are not kept between requests.
 
-## Tests (target, from S0 onward)
+1. In the Vercel dashboard, import the GitHub repository `alipourmo/ZEEDIET` and the branch with these files. Vercel detects the root `Dockerfile` and `vercel.json`. (The Vercel token used by the sandbox cannot yet create projects. See DECISIONS.)
+2. Set `APP_KEY` in the project environment variables. Generate it locally with `php artisan key:generate --show`.
+3. Deploy. Check `/healthz` and `/`.
 
-```bash
-composer install
-composer lint        # pint --test
-composer stan        # phpstan level 6
-composer test        # pest
-```
+Do not put real client data into the preview.
 
-Pest tests for the helpers are in `tests/Unit/Support/`.
+### Production (planned, spec section 16)
+
+Target: a Linux VPS in Iran with Nginx, PHP-FPM 8.4, MySQL 8, Supervisor (queue worker) and cron (`* * * * * php artisan schedule:run`). The hosting decision is still open. The release checklist (`docs/RELEASE.md`) is written in S5.
 
 ## Commands planned for later sprints
 
@@ -80,12 +89,8 @@ Pest tests for the helpers are in `tests/Unit/Support/`.
 - `php artisan backup:run`, `php artisan backup:restore-test` (S5)
 - `php artisan clients:purge {id}` (admin-confirmed hard delete after retention, S5)
 
-## Deployment
-
-Target: a Linux VPS in Iran with Nginx, PHP-FPM 8.3, MySQL 8, Supervisor (queue worker) and cron (`* * * * * php artisan schedule:run`). Steps are in spec section 16. The release checklist (`docs/RELEASE.md`) is written in S5. No hosting provider is chosen yet (see DECISIONS).
-
 ## Security
 
 - No secrets in the repository. `.env` is git-ignored.
-- All user-facing text is Persian and lives in `lang/fa/` (once created).
-- Robots: the whole app is `noindex`, `robots.txt` disallows all (S5).
+- The preview is `noindex`. `robots.txt` disallows all.
+- All user-facing text is Persian and lives in `lang/fa/`.

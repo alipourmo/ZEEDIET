@@ -1,0 +1,57 @@
+# Vercel container deployment (FrankenPHP). Vercel detects this root Dockerfile and selects the Container preset.
+# Reference: https://vercel.com/kb/guide/laravel-php-with-docker
+
+FROM dunglas/frankenphp:1-php8.4-bookworm AS base
+
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && install-php-extensions intl zip
+
+WORKDIR /app
+
+FROM base AS dependencies
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# composer.lock is copied when present. Commit it once Composer has run (see docs/DECISIONS.md).
+COPY composer.json composer.lock* ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --no-scripts \
+    --optimize-autoloader \
+    --prefer-dist
+
+COPY . .
+
+RUN mkdir -p \
+        storage/framework/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        bootstrap/cache \
+    && composer dump-autoload --no-dev --classmap-authoritative
+
+FROM base AS runtime
+
+COPY --from=dependencies --chown=www-data:www-data /app /app
+
+COPY --chown=www-data:www-data Caddyfile /etc/frankenphp/Caddyfile
+
+RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \
+    && chown -R www-data:www-data /config/caddy /data/caddy
+
+ENV PORT=80 \
+    APP_ENV=production \
+    APP_DEBUG=false \
+    LOG_CHANNEL=stderr \
+    CACHE_STORE=array \
+    SESSION_DRIVER=array \
+    QUEUE_CONNECTION=sync
+
+USER www-data
+
+# If APP_KEY is not set in Vercel, a random key is generated at start. Sessions then reset on restart.
+# Set a stable APP_KEY in the Vercel project environment for anything beyond a preview.
+CMD ["sh", "-c", "export APP_KEY=\"${APP_KEY:-base64:$(head -c 32 /dev/urandom | base64)}\" && exec frankenphp run --config /etc/frankenphp/Caddyfile"]

@@ -11,8 +11,10 @@ declare(strict_types=1);
 require __DIR__.'/../app/Support/Digits.php';
 require __DIR__.'/../app/Support/Jalali.php';
 require __DIR__.'/../app/Support/Mobile.php';
+require __DIR__.'/../app/Support/Display.php';
 
 use App\Support\Digits;
+use App\Support\Display;
 use App\Support\Jalali;
 use App\Support\Mobile;
 
@@ -41,6 +43,14 @@ $check(Jalali::fromGregorian(2021, 3, 20) === [1399, 12, 30], 'G 2021-03-20 = J 
 $check(Jalali::toGregorian(1403, 12, 30) === [2025, 3, 20], 'J 1403/12/30 to G');
 $check(Jalali::isJalaliLeap(1403) && Jalali::isJalaliLeap(1399) && ! Jalali::isJalaliLeap(1404), 'leap years');
 $check(! Jalali::isValidJalali(1404, 12, 30) && Jalali::isValidJalali(1403, 12, 30), 'leap-edge validity');
+
+// Display helpers
+$check(Display::fa(1403) === '۱۴۰۳', 'display fa');
+$check(Display::moneyNumber(1234567) === '۱٬۲۳۴٬۵۶۷', 'display money number');
+$check(Display::jdate('2025-03-20') === '۱۴۰۳/۱۲/۳۰', 'display jdate string');
+$check(Display::jdate('2025-03-20 23:30:00') === '۱۴۰۳/۱۲/۳۰', 'display jdate datetime string');
+$check(Display::jdate(new DateTimeImmutable('2025-03-20 22:00:00', new DateTimeZone('UTC'))) === '۱۴۰۴/۰۱/۰۱', 'display jdate converts to Tehran');
+$check(Display::jdate(null) === '', 'display jdate null');
 
 // Round trip over every day 1900-2100
 $end = gmmktime(0, 0, 0, 12, 31, 2100);

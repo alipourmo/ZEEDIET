@@ -1,0 +1,384 @@
+/*
+ * ZeeDiet base styles (spec section 11).
+ * Hand-written CSS with custom properties. No CSS framework, no external CDN.
+ */
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/vazirmatn/Vazirmatn-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/vazirmatn/Vazirmatn-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/vazirmatn/Vazirmatn-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --brand: #E5546B;
+    --brand-dark: #B93A50;
+    --brand-soft: #FBECEE;
+    --ink: #2B2326;
+    --muted: #7A6E72;
+    --line: #EADFE1;
+    --ok: #2E8B57;
+    --warn: #C98A12;
+    --danger: #C0392B;
+    --bg: #FFFFFF;
+    --surface: #FBF8F8;
+    --blue-soft: #E8EEF8;
+    --blue-ink: #2F4F7F;
+    --radius: 10px;
+    --focus: #2F4F7F;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Vazirmatn", Tahoma, sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+}
+
+a {
+    color: var(--brand-dark);
+}
+
+:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+}
+
+.container {
+    width: min(100% - 2rem, 960px);
+    margin-inline: auto;
+}
+
+.skip-link {
+    position: absolute;
+    inset-inline-start: -999px;
+}
+
+.skip-link:focus {
+    inset-inline-start: 1rem;
+    top: 1rem;
+    background: var(--surface);
+    padding: 0.5rem 1rem;
+}
+
+.site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.site-header__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-block: 0.75rem;
+}
+
+.brand {
+    color: var(--brand);
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+}
+
+.site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.site-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: 0.75rem;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: var(--radius);
+}
+
+.site-nav a:hover {
+    background: var(--brand-soft);
+}
+
+.banner {
+    margin-block: 1rem 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--brand-soft);
+    color: var(--brand-dark);
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+}
+
+main {
+    padding-block: 1.5rem 3rem;
+}
+
+.page-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.lead {
+    margin: 0 0 0.5rem;
+    max-width: 65ch;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 0.9375rem;
+}
+
+.card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-block: 1rem;
+}
+
+.card__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.card__body > :first-child {
+    margin-top: 0;
+}
+
+.card__body > :last-child {
+    margin-bottom: 0;
+}
+
+.tool-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.tool-link {
+    display: flex;
+    flex-direction: column;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--ink);
+}
+
+.tool-link:hover {
+    border-color: var(--brand);
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn--primary {
+    background: var(--brand);
+    color: #FFFFFF;
+}
+
+.btn--primary:hover {
+    background: var(--brand-dark);
+}
+
+.btn--secondary {
+    background: var(--bg);
+    color: var(--ink);
+    border-color: var(--line);
+}
+
+.btn--danger {
+    background: var(--danger);
+    color: #FFFFFF;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0.125rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+}
+
+.badge--scheduled {
+    background: var(--surface);
+}
+
+.badge--confirmed {
+    background: var(--blue-soft);
+    color: var(--blue-ink);
+    border-color: transparent;
+}
+
+.badge--arrived {
+    background: #FBF1DC;
+    color: #7A5300;
+    border-color: transparent;
+}
+
+.badge--in_progress {
+    background: var(--brand-soft);
+    color: var(--brand-dark);
+    border-color: transparent;
+}
+
+.badge--completed {
+    background: #E3F2EA;
+    color: var(--ok);
+    border-color: transparent;
+}
+
+.badge--cancelled,
+.badge--no_show {
+    background: #F3EEEF;
+    color: var(--muted);
+    border-color: transparent;
+}
+
+.form {
+    display: grid;
+    gap: 1rem;
+}
+
+.field {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.field label {
+    font-weight: 500;
+}
+
+.field input {
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    font-size: 1.0625rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.field input[aria-invalid="true"] {
+    border-color: var(--danger);
+}
+
+.field__error {
+    color: var(--danger);
+    font-weight: 500;
+}
+
+.form__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.result {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1rem;
+    margin: 0;
+}
+
+.result dt {
+    color: var(--muted);
+}
+
+.result dd {
+    margin: 0;
+    font-weight: 500;
+}
+
+.swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.swatch {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.swatch__chip {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    flex: none;
+}
+
+.site-footer {
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.875rem;
+    padding-block: 1rem;
+}
+
+@media print {
+    .site-header,
+    .site-footer,
+    .banner,
+    .site-nav {
+        display: none;
+    }
+}

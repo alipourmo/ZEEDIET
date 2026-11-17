@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Enums\PregnancyStatus;
 use App\Models\Client;
+use App\Models\ClientMedical;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -57,9 +58,12 @@ final readonly class ClientAlertBadges
         /** @var PregnancyStatus $pregnancy the enum cast on Client */
         $pregnancy = $client->pregnancy_status;
 
+        /** @var array<mixed> $keys */
+        $keys = $medical instanceof ClientMedical ? (array) $medical->device_contraindications : [];
+
         return new self(
             hasAllergy: (bool) $medical?->getAttribute('has_allergy'),
-            contraindications: array_values(array_map('strval', (array) ($medical?->device_contraindications ?? []))),
+            contraindications: array_values(array_map('strval', $keys)),
             pregnancy: $pregnancy,
         );
     }

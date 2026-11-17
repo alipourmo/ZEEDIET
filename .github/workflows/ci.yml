@@ -32,7 +32,22 @@ jobs:
         run: vendor/bin/pint --test
 
       - name: PHPStan (level 6)
-        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github
 
       - name: Pest
-        run: vendor/bin/pest
+        run: |
+          mkdir -p build
+          vendor/bin/pest --log-junit build/pest-junit.xml
+
+      - name: Report Pest failures as annotations
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('build/pest-junit.xml')
+          for case in tree.iter('testcase'):
+              for child in list(case):
+                  if child.tag in ('failure', 'error'):
+                      message = (child.get('message') or '').replace('\n', ' ')[:800]
+                      print(f"::error title={case.get('name')}::{message}")
+          PY

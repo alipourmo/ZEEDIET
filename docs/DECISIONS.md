@@ -133,3 +133,20 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Question:** Keep PHP 8.4 (Pest 5, Laravel 13) or switch to PHP 8.3 (Laravel 12, Pest 4)?
 - **Choice:** PHP 8.4, as chosen by the owner. The Dockerfile, CI workflow and `composer.json` already target 8.4.
 - **Reason:** Owner choice. Keeps Laravel 13, the approved version.
+
+## 2026-11-17 — Input normalisation skips password fields
+
+- **Question:** Spec section 7.9 says to normalise Persian and Arabic digits in all POST/PUT/PATCH input. Normalising a password would change it, so a user who types Persian digits would get a different password from the one they set.
+- **Choice:** `NormalizeInput` skips any field whose name contains `password`. Other text fields, query strings and JSON bodies are normalised.
+- **Reason:** The password the user types is the one that is checked. Digit conversion only matters for search and unique fields.
+
+## 2026-11-17 — Date-time display: strings are clinic local time
+
+- **Question:** `@jdatetime` may receive a DateTime (with a time zone) or a plain string. Which time zone applies to a string?
+- **Choice:** A DateTime is converted to Asia/Tehran. A string is read as clinic local time and is not converted.
+- **Reason:** The clinic enters and reads times in Tehran time. Converting plain strings would shift times. Callers that hold UTC values must pass a DateTime.
+
+## 2026-11-17 — S0 tasks completed
+
+- Added the missing S0 items: `@jdatetime` directive, input-normalising middleware, flash messages in the layout, and `Model::preventLazyLoading()` outside production.
+- S0 is complete when the CI run on this branch passes (spec S0 acceptance: CI green on a fresh clone). The four acceptance checks themselves were already covered by the support tests and `scripts/verify-support.php`.

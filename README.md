@@ -6,14 +6,15 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 
 ## Status
 
-**Sprint S0 is partly done.** The Laravel 13 project, the Persian layout and the preview pages are in place. The first CI run and the first Vercel deployment have not happened yet.
+**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is next.
 
 | Area | State |
 |---|---|
 | Specification | Done (`docs/SPEC.md`) |
 | Laravel 13 project (PHP 8.4, owner approved) | Done, first CI run pending |
 | Date, digit and mobile helpers (`app/Support`) | Done and verified |
-| Blade directives `@fa`, `@jdate`, `@money` | Done |
+| Blade directives `@fa`, `@jdate`, `@jdatetime`, `@money` | Done |
+| Input normalisation middleware, flash messages | Done |
 | RTL layout, Vazirmatn, CSS tokens, card/button/badge | Done |
 | Preview pages (home, Jalali tool, mobile tool, `/_styleguide` local) | Done |
 | Vercel container preview | Files ready, deployment blocked (see DECISIONS) |

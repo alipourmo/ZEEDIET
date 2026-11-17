@@ -367,6 +367,32 @@ main {
     flex: none;
 }
 
+.flash {
+    margin-block: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.flash--success {
+    background: #E3F2EA;
+    color: var(--ok);
+    border-color: transparent;
+}
+
+.flash--warning {
+    background: #FBF1DC;
+    color: #7A5300;
+    border-color: transparent;
+}
+
+.flash--error {
+    background: #F9E3E0;
+    color: var(--danger);
+    border-color: transparent;
+}
+
 .site-footer {
     border-top: 1px solid var(--line);
     color: var(--muted);

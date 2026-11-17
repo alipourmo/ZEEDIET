@@ -30,6 +30,7 @@
     </div>
 
     <main id="main" class="container">
+        <x-flash />
         @yield('content')
     </main>
 

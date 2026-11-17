@@ -9,6 +9,7 @@ return [
     'nav_mobile' => 'بررسی شماره موبایل',
     'nav_styleguide' => 'راهنمای طراحی',
     'submit' => 'بررسی',
+    'none' => '—',
     'clear' => 'پاک کردن',
     'logout' => 'خروج',
     'previous' => 'قبلی',

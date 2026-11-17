@@ -35,18 +35,4 @@ jobs:
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github
 
       - name: Pest
-        run: |
-          mkdir -p build
-          vendor/bin/pest > build/pest-output.txt 2>&1
-          status=$?
-          cat build/pest-output.txt
-          exit $status
-
-      - name: Report Pest output on failure
-        if: failure()
-        run: |
-          tail -c 9000 build/pest-output.txt > build/tail.txt
-          split -b 1300 -d -a 2 build/tail.txt build/chunk_
-          for f in build/chunk_*; do
-            echo "::notice title=$(basename "$f")::$(base64 -w0 "$f")"
-          done
+        run: vendor/bin/pest

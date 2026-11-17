@@ -250,3 +250,27 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - Route `GET /admin/audit` (`admin.audit.index`) is inside the admin panel group and also has `can:audit.view`. The Gate allows the admin role only (spec section 5).
 - Filters: actor, client ID, action, and a Jalali date range (`YYYY/MM/DD`, both ends inclusive, Tehran time). Persian digits are accepted (NormalizeInput).
 - 50 entries per page. Actor names come from one extra query per page, not one per row.
+
+## 2026-11-17 — S1-T4: where client screens live
+
+- **Admin and secretary** use `/admin/clients` (list, create, show, edit, update, delete). Route middleware is `area:admin`, then `can:` for each action (`client.view`, `client.create`, `client.update`, `client.delete`). The secretary has no `client.delete`, so delete returns 403 for them.
+- **Medical record, admin:** `/admin/clients/{client}/medical`, behind `can:medical.view` and `can:medical.update`. Only the admin has these in the panel, because the secretary has no medical permissions (spec section 5).
+- **Specialist:** `/specialist/clients/{client}` (file) and `/specialist/clients/{client}/medical` (edit), behind `area:specialist` and the same `can:` checks. Spec section 8.4 names this as `specialist.clients.show`.
+- **Why a separate group:** `area:admin` on `/admin/clients` would block a specialist, who has `client.view` and `medical.view`. The specialist routes therefore sit in the specialist panel.
+- **Gaps:** The matrix grants the specialist `client.create` and `client.update`, but no route in S1 uses them, so the specialist cannot edit core client fields. The operator has `client.view`, but no client route in S1 is reachable by the operator. The operator's today-only scope is enforced in S2.
+- The views in `resources/views/clients/` receive their URLs and flags (`$editUrl`, `$medicalUrl`, `$deleteUrl`, `$formAction`, `$backUrl`) from the controllers. Views never check the role.
+
+## 2026-11-17 — S1-T4: medical access and audit detail
+
+- **Every read is audited.** Opening the medical page writes a `view` row on `ClientMedical` with the client ID. A refused read (403) writes nothing.
+- **Medical updates are audited by field name.** The row stores `changed_fields` (e.g. `["food_allergies"]`) and never the values. The text is never copied into `audit_logs`. A save with no change writes no row.
+- **Core client edits** store `old` and `new` values for the changed fields only. These fields hold identity and contact data, not medical text, so the secretary can see them in the audit viewer.
+- **Consent:** Data consent is required on create (`consent_data_at`). It is shown on the file and not editable afterwards. Photo consent: ticking the box sets `consent_photos_at` once, and a later save keeps the original time. Unticking clears it. The edit form pre-fills the box, so a plain save does not revoke consent.
+- **Mobile:** normalised (Persian digits, `+98`, `0098`, dashes, bare 10-digit) before validation, using `App\Support\Mobile`. Format must be `09` followed by nine digits. Uniqueness covers archived clients too.
+- **Duplicates:** An active duplicate returns an error with a link to the existing file (session flash `duplicate_client_id`, rendered in the form). An archived duplicate returns an error with no link.
+- **Birth date** is typed in Jalali (`YYYY/MM/DD`), validated, and stored as a Gregorian `date`.
+- **Codes:** `C-000001` format from the `sequences` row `client_code`, locked with `lockForUpdate` during the increment. Codes are never reused, even after a soft delete.
+- **Soft delete only.** `Client::forceDelete()` throws. `ClientMedical` refuses `delete()` and its foreign key is `restrictOnDelete`. Clients have exactly one medical row, created in the same transaction.
+- **Search** (`q`) matches first name, last name, code and mobile with `LIKE`. `%`, `_` and `\` are escaped so a search cannot act as a wildcard. Persian and ASCII digits are the same after `NormalizeInput`.
+- **Policies:** none. Authorisation uses the Gates from `config/permissions.php` (`can:` middleware and `FormRequest::authorize()`), as decided in S1-T1.
+- **Contraindications** are stored as a JSON list of keys from `config/clinic.php`, and labels come from `lang/fa/clients.php`.

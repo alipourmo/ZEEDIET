@@ -180,3 +180,9 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 
 - **Choice:** `tests/Pest.php` applies `RefreshDatabase` to every test in `tests/Feature`. Every Feature test therefore runs all migrations on an in-memory SQLite database.
 - **Reason:** A broken migration fails the suite. This is the check on "migrations are reversible on a fresh database" in spec section 19, for the up direction. Reversibility (down) is checked by hand until a rollback test is added.
+
+## 2026-11-17 — S1-T1: mockery/mockery added as a dev dependency
+
+- **Reason:** With the first Feature tests that boot the application through Laravel's test case, the Pest run failed on `Class "Mockery" not found` (28 Feature tests). The Laravel skeleton ships `mockery/mockery` in `require-dev`, and our `composer.json` had dropped it.
+- **Scope:** dev dependency only (`require-dev`). Not used by app code. The runtime is unchanged.
+- **Alternative rejected:** Removing the Mockery call would mean patching the framework or a Pest hook; the skeleton default is the least risky route.

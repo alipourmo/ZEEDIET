@@ -34,17 +34,6 @@ jobs:
       - name: PHPStan (level 6)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github
 
-      - name: Diagnose (temporary)
-        if: always()
-        run: |
-          {
-            echo "== pest version"; vendor/bin/pest --version 2>&1 | tail -c 1500
-            echo "== list tests"; vendor/bin/pest --list-tests 2>&1 | tail -c 3000
-            echo "== artisan about"; php artisan about --only=environment --no-ansi 2>&1 | tail -c 2000
-            echo "== artisan route:list"; php artisan route:list --no-ansi 2>&1 | tail -c 2000
-          } > build-diag.txt 2>&1 || true
-          echo "::notice title=diag::$(base64 -w0 build-diag.txt)"
-
       - name: Pest
         run: |
           mkdir -p build
@@ -55,19 +44,28 @@ jobs:
           exit $status
 
       - name: Report Pest failures as annotations
-        if: failure()
+        if: always()
         run: |
-          python3 - <<'PY'
-          import os, xml.etree.ElementTree as ET
-          if os.path.exists('build/pest-junit.xml'):
-              tree = ET.parse('build/pest-junit.xml')
-              for case in tree.iter('testcase'):
-                  for child in list(case):
-                      if child.tag in ('failure', 'error'):
-                          message = (child.get('message') or '').replace('\n', ' ')[:800]
-                          print(f"::error title={case.get('name')}::{message}")
-          if os.path.exists('build/pest-output.txt'):
-              lines = open('build/pest-output.txt', encoding='utf8', errors='replace').read().splitlines()
-              tail = '%0A'.join(lines[-60:])
-              print(f"::error title=Pest output tail::{tail}")
-          PY
+          set +x
+          if [ -f build/pest-output.txt ]; then
+            echo "output bytes: $(wc -c < build/pest-output.txt)"
+            tail -c 9000 build/pest-output.txt > build/tail.txt
+            split -b 1300 -d -a 2 build/tail.txt build/chunk_
+            for f in build/chunk_*; do
+              echo "::notice title=$(basename $f)::$(base64 -w0 $f)"
+            done
+          else
+            echo "::notice title=nooutput::no pest output file"
+          fi
+          if [ -f build/pest-junit.xml ]; then
+            python3 - <<'PY'
+import xml.etree.ElementTree as ET
+tree = ET.parse('build/pest-junit.xml')
+for case in tree.iter('testcase'):
+    for child in list(case):
+        if child.tag in ('failure', 'error'):
+            print(f"::error title={case.get('name')}::{(child.get('message') or '')[:500]}")
+PY
+          else
+            echo "::notice title=nojunit::no junit file"
+          fi

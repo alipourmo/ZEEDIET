@@ -51,7 +51,9 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permission): bool
     {
-        $granted = config('permissions.roles.'.$this->role->value, []);
+        /** @var StaffRole $role */
+        $role = $this->role;
+        $granted = config('permissions.roles.'.$role->value, []);
 
         return is_array($granted) && in_array($permission, $granted, true);
     }

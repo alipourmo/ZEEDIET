@@ -186,3 +186,7 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Reason:** With the first Feature tests that boot the application through Laravel's test case, the Pest run failed on `Class "Mockery" not found` (28 Feature tests). The Laravel skeleton ships `mockery/mockery` in `require-dev`, and our `composer.json` had dropped it.
 - **Scope:** dev dependency only (`require-dev`). Not used by app code. The runtime is unchanged.
 - **Alternative rejected:** Removing the Mockery call would mean patching the framework or a Pest hook; the skeleton default is the least risky route.
+
+## 2026-11-17 — S1-T1: CI debugging notes
+
+- A Pest step failure gave no usable log via `gh` in this sandbox. Diagnosis used check-run annotations: the 3 KB limit means long output needs base64 chunks, one per notice. The temporary diagnostic steps were removed; `ci.yml` is back to the S0 version.

@@ -32,27 +32,7 @@ jobs:
         run: vendor/bin/pint --test
 
       - name: PHPStan (level 6)
-        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
       - name: Pest
-        run: |
-          mkdir -p build
-          set +e
-          vendor/bin/pest --log-junit build/pest-junit.xml > build/pest-output.txt 2>&1
-          status=$?
-          cat build/pest-output.txt
-          exit $status
-
-      - name: Report Pest failures as annotations
-        if: always()
-        run: |
-          if [ -f build/pest-output.txt ]; then
-            echo "output bytes: $(wc -c < build/pest-output.txt)"
-            tail -c 9000 build/pest-output.txt > build/tail.txt
-            split -b 1300 -d -a 2 build/tail.txt build/chunk_
-            for f in build/chunk_*; do
-              echo "::notice title=$(basename "$f")::$(base64 -w0 "$f")"
-            done
-          else
-            echo "::notice title=nooutput::no pest output file"
-          fi
+        run: vendor/bin/pest

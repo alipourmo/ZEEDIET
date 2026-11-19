@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AvailabilityController;
+use App\Http\Controllers\Admin\CalendarController;
 use App\Http\Controllers\Admin\Catalog\DeviceController;
 use App\Http\Controllers\Admin\Catalog\RoomController;
 use App\Http\Controllers\Admin\Catalog\ServiceController;
@@ -104,6 +105,11 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
     Route::get('admin/api/availability', [AvailabilityController::class, 'slots'])
         ->name('admin.api.availability')
         ->middleware('can:appointment.manage');
+
+    // Calendar (spec section 8.2): day, week and month. Every row needs appointment.view_all.
+    Route::get('admin/calendar', [CalendarController::class, 'index'])
+        ->name('admin.calendar.index')
+        ->middleware('can:appointment.view_all');
 
     // Admin only, by the audit.view Gate (spec sections 5 and 8.2).
     Route::get('/admin/audit', [AuditLogController::class, 'index'])

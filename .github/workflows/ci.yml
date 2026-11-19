@@ -58,3 +58,74 @@ jobs:
                           print(f"::error title=Pest {child.tag}::{case.get('name')} :: {message}")
           print(f"failing tests: {count}")
           PY
+
+  # The whole suite again on MySQL 8, the production database (spec section 3). This runs the concurrency test,
+  # which needs real row locks, and checks that nothing depends on SQLite behaviour.
+  mysql:
+    name: Pest on MySQL 8
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: zeediet_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: zeediet_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, zip, pdo_mysql, openssl, tokenizer, xml, ctype, fileinfo
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Pest on MySQL
+        run: vendor/bin/pest --log-junit build/junit.xml
+
+      - name: Summarise Pest failures
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          try:
+              root = ET.parse('build/junit.xml').getroot()
+          except Exception as error:
+              print(f"::error::no JUnit report: {error}")
+              raise SystemExit(0)
+          count = 0
+          for case in root.iter('testcase'):
+              for child in case:
+                  if child.tag in ('failure', 'error'):
+                      count += 1
+                      if count <= 12:
+                          message = (child.get('message') or child.text or '').replace('\n', ' | ')[:400]
+                          print(f"::error title=Pest {child.tag}::{case.get('name')} :: {message}")
+          print(f"failing tests: {count}")
+          PY

@@ -2,13 +2,17 @@
 
 use App\Models\Client;
 use App\Models\ClientMedical;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-pest()->extend(TestCase::class)->in('Feature');
+pest()->extend(TestCase::class)->in('Feature', 'Concurrency');
 
 // Feature tests run every migration on a fresh in-memory database, so a broken migration fails the suite.
 uses(RefreshDatabase::class)->in('Feature');
+
+// Concurrency tests share committed data with child processes, so they migrate fresh instead of using a transaction.
+uses(DatabaseMigrations::class)->in('Concurrency');
 
 /**
  * A client with its medical record, as ClientService::create() leaves it.

@@ -318,3 +318,14 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Hard delete is allowed** for schedule rows and holidays. Neither is a medical or financial record (spec 10).
 - **Not audited yet.** Spec 7.8 does not list schedules or holidays. Catalog edits are not audited either (S1-T6). Adding them is a small change if the clinic wants it.
 - **Access:** `catalog.manage` (admin only), as spec 8.2 lists schedules and holidays under the catalog.
+
+## 2026-11-17 — S2-T3: booking service, status history, concurrency
+
+- **Locks come first, then reads.** Under MySQL REPEATABLE READ the snapshot is taken at the first ordinary read. A read before the lock could miss a booking that committed a moment earlier. Every write transaction therefore locks, then reads.
+- **Lock order is fixed:** client, device, room, specialist. A reschedule locks the appointment first, then the same rows in the same order. A status change locks only the appointment. One order everywhere means no lock cycle, so no deadlock between two bookings.
+- **Resource row, not overlapping rows.** The spec suggests `SELECT ... FOR UPDATE` on overlapping appointments. I lock the resource row instead. That serialises every booking of the resource, including a booking into a gap where no row exists yet. Locking only existing rows misses that case.
+- **Reschedule** is allowed only for `scheduled` and `confirmed`. Spec 7.2 does not say which statuses allow it; this is my default. It re-runs every check, ignoring the appointment itself. It writes an audit row with old and new times but **no history row**, because it is not a status transition.
+- **Transitions** follow spec 7.2 exactly (`AppointmentStatus::allowedNext`). Every move writes one history row and one audit row. Cancelling needs a non-blank reason, trimmed. `in_progress` and `completed` are in the state machine, but the admin UI does not offer them. The operator screens in S3 do.
+- **History is append-only in code:** the service only creates rows. A database trigger is deferred to S5, as with the audit log (S1-T3).
+- **Concurrency is tested on MySQL.** `tests/Concurrency/BookingRaceTest.php` starts two PHP processes that book the same device slot at the same moment, in three rounds. Exactly one must succeed. SQLite has no row locks and cannot share committed data with a second process, so the test is skipped there. The new CI job `mysql` runs the full suite on MySQL 8.0 (spec section 3).
+- **CI now annotates Pest failures.** On failure, each failing test appears as an annotation, because the raw log is not downloadable through the API.

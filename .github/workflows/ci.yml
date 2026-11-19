@@ -50,7 +50,16 @@ jobs:
               raise SystemExit(0)
 
           files = report.get('files', [])
-          print(f"Pint: {len(files)} file(s) need formatting")
+          errors = report.get('errors', [])
+          print(f"Pint: {len(files)} file(s) need formatting; keys {sorted(report.keys())}; {len(errors)} error(s)")
+          print(f"::error title=Pint report::keys {escape(', '.join(sorted(report.keys())))}; files {len(files)}; errors {len(errors)}")
+
+          for entry in errors[:10]:
+              print(f"::error title=Pint error::{escape(json.dumps(entry)[:1000])}")
+
+          raw = open('build/pint.json', encoding='utf8').read()
+          for start in range(0, min(len(raw), 3600), 1200):
+              print(f"::error title=Pint raw::{escape(raw[start:start + 1200])}")
 
           for entry in files[:40]:
               fixers = ', '.join(entry.get('appliedFixers', []))

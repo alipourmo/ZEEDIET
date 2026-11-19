@@ -102,8 +102,10 @@ jobs:
                   skipped += 1
                   names.append(case.get('name'))
           print(f"failing tests: {count}; tests run: {tests}; skipped: {skipped}")
+          print(f"::notice title=Pest totals::{count} failing, {tests} run, {skipped} skipped")
           for name in names[:20]:
               print(f"skipped: {name}")
+              print(f"::notice title=Pest skipped::{name}")
           PY
 
   # The whole suite again on MySQL 8, the production database (spec section 3). This runs the concurrency test,
@@ -182,6 +184,8 @@ jobs:
                   skipped += 1
                   names.append(case.get('name'))
           print(f"failing tests: {count}; tests run: {tests}; skipped: {skipped}")
+          print(f"::notice title=Pest totals::{count} failing, {tests} run, {skipped} skipped")
           for name in names[:20]:
               print(f"skipped: {name}")
+              print(f"::notice title=Pest skipped::{name}")
           PY

@@ -380,3 +380,9 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Where the buttons are.** The edit page shows an action panel above the form, for every saved appointment. Reschedule stays in the form, which is still shown only for scheduled and confirmed appointments. Buttons are plain POST forms, so no JavaScript is needed.
 - **Errors** from the three keys (`status`, `to`, `cancel_reason`) show in the panel, in Persian. Messages come from `lang/fa/appointments.php` and `lang/fa/scheduling.php`.
 - **Not done:** buttons on the calendar blocks. Clicking a block already opens the appointment edit page, which has the panel.
+
+## 2026-11-17 — CI: the Pest step must fail when Pest fails
+
+- **What went wrong:** the Pest step pipes its output into `tee` so the log can be shown on failure. A pipeline's exit status is that of its last command, so `tee` hid Pest's failure, and the step reported success. The runner's default shell does not set `pipefail`.
+- **Fix:** both Pest steps run `set -o pipefail` first. The summary step still runs on failure (`if: always()`), so the cause shows as an annotation.
+- **Check:** a green Pest step now means Pest passed. Before trusting a green run, check the totals notice (`0 failing`).

@@ -74,6 +74,7 @@ jobs:
 
       - name: Pest
         run: |
+          set -o pipefail
           mkdir -p build
           vendor/bin/pest --log-junit build/junit.xml 2>&1 | tee build/pest.log
 
@@ -180,6 +181,7 @@ jobs:
 
       - name: Pest on MySQL
         run: |
+          set -o pipefail
           mkdir -p build
           vendor/bin/pest --log-junit build/junit.xml 2>&1 | tee build/pest.log
 

@@ -148,37 +148,40 @@ test('a stale page cannot move an appointment again', function () {
         ->and(AppointmentStatusHistory::query()->where('appointment_id', $appointment->getKey())->count())->toBe(1);
 });
 
-test('the appointment page offers only the moves its status allows', function (AppointmentStatus $status, array $shown, array $hidden) {
-    $appointment = transitionFixture($status);
+test('the appointment page offers only the moves its status allows', function (AppointmentStatus $status) {
+    // The Persian labels of each move, as lang/fa/appointments.php defines them.
+    $labels = [
+        'confirmed' => 'تأیید نوبت',
+        'arrived' => 'ثبت حضور',
+        'no_show' => 'ثبت عدم حضور',
+        'cancelled' => 'لغو نوبت',
+    ];
+    $offered = match ($status) {
+        AppointmentStatus::Scheduled => ['confirmed', 'arrived', 'no_show', 'cancelled'],
+        AppointmentStatus::Confirmed => ['arrived', 'no_show', 'cancelled'],
+        AppointmentStatus::Arrived => ['cancelled'],
+        default => [],
+    };
 
+    $appointment = transitionFixture($status);
     $response = $this->actingAs(transitionStaff())->get(route('admin.appointments.edit', $appointment));
 
     $response->assertOk();
-    foreach ($shown as $label) {
-        $response->assertSee($label);
+
+    if ($offered === []) {
+        $response->assertSee(__('appointments.no_actions'));
     }
-    foreach ($hidden as $label) {
-        $response->assertDontSee($label);
+
+    foreach ($labels as $to => $label) {
+        if (in_array($to, $offered, true)) {
+            $response->assertSee($label);
+        } else {
+            $response->assertDontSee($label);
+        }
     }
 })->with([
-    'scheduled' => [
-        AppointmentStatus::Scheduled,
-        ['تأیید نوبت', 'ثبت حضور', 'ثبت عدم حضور', 'لغو نوبت'],
-        [],
-    ],
-    'confirmed' => [
-        AppointmentStatus::Confirmed,
-        ['ثبت حضور', 'ثبت عدم حضور', 'لغو نوبت'],
-        ['تأیید نوبت'],
-    ],
-    'arrived' => [
-        AppointmentStatus::Arrived,
-        ['لغو نوبت'],
-        ['تأیید نوبت', 'ثبت حضور', 'ثبت عدم حضور'],
-    ],
-    'cancelled' => [
-        AppointmentStatus::Cancelled,
-        [__('appointments.no_actions')],
-        ['تأیید نوبت', 'ثبت حضور', 'ثبت عدم حضور', 'لغو نوبت'],
-    ],
+    [AppointmentStatus::Scheduled],
+    [AppointmentStatus::Confirmed],
+    [AppointmentStatus::Arrived],
+    [AppointmentStatus::Cancelled],
 ]);

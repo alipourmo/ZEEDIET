@@ -29,7 +29,38 @@ jobs:
           php artisan key:generate --ansi
 
       - name: Pint (code style)
-        run: vendor/bin/pint --test
+        run: |
+          mkdir -p build
+          vendor/bin/pint --test --output-to-file build/pint.json --output-format json
+
+      - name: Summarise Pint failures
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import json
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+          try:
+              with open('build/pint.json', encoding='utf8') as handle:
+                  report = json.load(handle)
+          except Exception as error:
+              print(f"::error title=Pint::no report: {error}")
+              raise SystemExit(0)
+
+          files = report.get('files', [])
+          print(f"Pint: {len(files)} file(s) need formatting")
+
+          for entry in files[:40]:
+              fixers = ', '.join(entry.get('appliedFixers', []))
+              print(f"::error file={entry.get('name', '')},title=Pint::{escape(fixers)}")
+
+          for entry in files[:10]:
+              diff = (entry.get('diff') or '')[:4500]
+              for start in range(0, len(diff), 1200):
+                  print(f"::error title=Pint diff {entry.get('name', '')}::{escape(diff[start:start + 1200])}")
+          PY
 
       - name: PHPStan (level 6)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github

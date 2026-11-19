@@ -305,3 +305,16 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Mobile** is normalised (Persian digits and `+98` accepted) and must be unique and match `09xxxxxxxxx`.
 - **Validation messages.** `lang/fa/validation.php` now covers the rules and attribute names the new forms use. Before this, unlisted rules would show raw English keys.
 - **Service prices and durations** now convert Persian digits with `Digits::toAscii`. This closes the S1-T6 gap.
+
+## 2026-11-17 — S2-T1: schedules and holidays
+
+- **Weekday numbering** follows spec 6.2: 0 = Saturday … 6 = Friday. `App\Support\Weekday::fromDate()` shifts Carbon's Sunday-first numbering.
+- **Schedule rows are replaced as a set** in one transaction (`ScheduleService::replace`), so a saved week never mixes old and new hours. A resource with no rows is unavailable.
+- **Times** are stored as `HH:MM:SS` and compared as minutes (`SlotMath`), so string ordering of times is never relied on.
+- **Who has hours:** specialists (role `specialist`), devices and rooms. Admin and secretary accounts cannot be given hours.
+- **Default hours** (`config/clinic.php` `working_hours`, 09:00–20:00) are seeded Saturday to Thursday for every active specialist, device and room. Friday is the weekend by config, so the seeder does not add it. A resource that already has hours is left alone.
+- **Holidays:** config `clinic.holidays` is **empty**. I did not guess official holiday dates. The clinic enters them in `/admin/holidays`. Spec 17 allows a placeholder list; an empty one is safer than wrong dates.
+- **Holiday dates** are typed in Jalali (`۱۴۰۵/۰۱/۰۱`) and stored as Gregorian. Each date is unique. Editing keeps the record's own date.
+- **Hard delete is allowed** for schedule rows and holidays. Neither is a medical or financial record (spec 10).
+- **Not audited yet.** Spec 7.8 does not list schedules or holidays. Catalog edits are not audited either (S1-T6). Adding them is a small change if the clinic wants it.
+- **Access:** `catalog.manage` (admin only), as spec 8.2 lists schedules and holidays under the catalog.

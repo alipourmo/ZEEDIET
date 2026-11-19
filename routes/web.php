@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\Catalog\RoomController;
 use App\Http\Controllers\Admin\Catalog\ServiceController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientMedicalController;
+use App\Http\Controllers\Admin\HolidayController;
+use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -64,6 +66,21 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
     Route::resource('admin/rooms', RoomController::class)
         ->names('admin.rooms')
         ->only(['index', 'create', 'store', 'edit', 'update'])
+        ->middleware('can:catalog.manage');
+
+    // Working hours and holidays (spec sections 6.2 and 8.2). Admin only: catalog.manage on each route.
+    Route::get('admin/schedules', [ScheduleController::class, 'index'])
+        ->middleware('can:catalog.manage')->name('admin.schedules.index');
+    Route::get('admin/schedules/{type}/{id}/edit', [ScheduleController::class, 'edit'])
+        ->whereIn('type', ['user', 'device', 'room'])->whereNumber('id')
+        ->middleware('can:catalog.manage')->name('admin.schedules.edit');
+    Route::put('admin/schedules/{type}/{id}', [ScheduleController::class, 'update'])
+        ->whereIn('type', ['user', 'device', 'room'])->whereNumber('id')
+        ->middleware('can:catalog.manage')->name('admin.schedules.update');
+
+    Route::resource('admin/holidays', HolidayController::class)
+        ->names('admin.holidays')
+        ->except(['show'])
         ->middleware('can:catalog.manage');
 
     // Staff accounts (spec sections 7.6 and 8.2). Admin only: the user.manage Gate. Deleting a user is not offered:

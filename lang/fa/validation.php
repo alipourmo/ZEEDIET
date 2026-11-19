@@ -13,6 +13,8 @@ return [
     'in' => ':attribute نامعتبر است.',
     'unique' => ':attribute قبلاً ثبت شده است.',
     'regex' => 'قالب :attribute درست نیست.',
+    'date_format' => ':attribute باید به شکل ساعت باشد.',
+    'date' => ':attribute تاریخ معتبر نیست.',
     'max' => [
         'numeric' => ':attribute نباید بیشتر از :max باشد.',
         'string' => ':attribute نباید بیشتر از :max نویسه باشد.',

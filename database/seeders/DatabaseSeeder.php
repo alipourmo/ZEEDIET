@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             StaffSeeder::class,
             CatalogSeeder::class,
+            ScheduleSeeder::class,
         ]);
     }
 }

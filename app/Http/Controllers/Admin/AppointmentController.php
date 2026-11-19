@@ -8,6 +8,7 @@ use App\Enums\AppointmentStatus;
 use App\Enums\StaffRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AppointmentRequest;
+use App\Http\Requests\AppointmentTransitionRequest;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Device;
@@ -38,6 +39,7 @@ class AppointmentController extends Controller
             'method' => 'POST',
             'appointment' => null,
             'editable' => true,
+            'actions' => [],
             'prefillClient' => $request->integer('client') ?: null,
             'pickerDate' => Jalali::formatGregorianAsJalali(now()->format('Y-m-d')),
             ...$this->options(null),
@@ -61,6 +63,7 @@ class AppointmentController extends Controller
             'method' => 'PUT',
             'appointment' => $appointment,
             'editable' => in_array($status, [AppointmentStatus::Scheduled, AppointmentStatus::Confirmed], true),
+            'actions' => $this->actionsFor($appointment),
             'prefillClient' => null,
             'pickerDate' => Jalali::formatGregorianAsJalali($appointment->time('starts_at')->format('Y-m-d')),
             ...$this->options($appointment),
@@ -72,6 +75,35 @@ class AppointmentController extends Controller
         $this->bookings->reschedule($appointment, $request->bookingData(), $this->actor($request));
 
         return redirect()->route('admin.appointments.edit', $appointment)->with('success', __('appointments.rescheduled'));
+    }
+
+    /**
+     * Status changes from the appointment screen (spec section 7.2). Every move goes through BookingService, which
+     * locks the appointment, checks the state machine and writes the history and audit rows.
+     */
+    public function transition(AppointmentTransitionRequest $request, Appointment $appointment): RedirectResponse
+    {
+        $to = $request->targetStatus();
+
+        $this->bookings->transition($appointment, $to, $this->actor($request), $request->cancelReason());
+
+        return redirect()->route('admin.appointments.edit', $appointment)
+            ->with('success', __('appointments.status_changed', ['status' => __('scheduling.status.'.$to->value)]));
+    }
+
+    /**
+     * The status moves the screen offers from the current status: the state machine, limited to the offered list.
+     *
+     * @return list<AppointmentStatus>
+     */
+    private function actionsFor(Appointment $appointment): array
+    {
+        $offered = AppointmentTransitionRequest::OFFERED;
+
+        return array_values(array_filter(
+            $appointment->currentStatus()->allowedNext(),
+            fn (AppointmentStatus $next): bool => in_array($next->value, $offered, true),
+        ));
     }
 
     /**

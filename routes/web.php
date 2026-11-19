@@ -102,6 +102,9 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
         ->names('admin.appointments')
         ->only(['create', 'store', 'edit', 'update'])
         ->middleware('can:appointment.manage');
+    Route::post('admin/appointments/{appointment}/status', [AppointmentController::class, 'transition'])
+        ->name('admin.appointments.transition')
+        ->middleware('can:appointment.manage');
     Route::get('admin/api/availability', [AvailabilityController::class, 'slots'])
         ->name('admin.api.availability')
         ->middleware('can:appointment.manage');

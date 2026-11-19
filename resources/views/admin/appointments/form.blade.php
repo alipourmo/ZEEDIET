@@ -5,6 +5,10 @@
 @section('content')
     <h1 class="page-title">{{ $title }}</h1>
 
+    @if ($appointment)
+        @include('admin.appointments._actions')
+    @endif
+
     @if ($appointment && ! $editable)
         <div class="card">
             <div class="card__body">

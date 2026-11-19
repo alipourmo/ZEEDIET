@@ -6,7 +6,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 
 ## Status
 
-**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is done: S1-T1 to S1-T7 are complete (CI green on `0139170`). S2 (scheduling) is in progress: S2-T1 to S2-T5 are complete (CI green on `31be8bc`); S2-T6 is next. Sprint notes: [docs/sprints/S2.md](docs/sprints/S2.md).
+**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is done: S1-T1 to S1-T7 are complete (CI green on `0139170`). S2 (scheduling) is in progress: S2-T1 to S2-T5 are complete (CI green on `d10fb03`); S2-T6 is built and waiting for CI. Sprint notes: [docs/sprints/S2.md](docs/sprints/S2.md).
 
 | Area | State |
 |---|---|
@@ -30,7 +30,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S2-T3: booking service with locks, reschedule, cancel, status history | Done (CI green; race test on MySQL) |
 | S2-T4: appointment form, resource pickers, free-slot endpoint | Done (CI green) |
 | S2-T5: calendar day, week and month in Jalali, filters | Done (CI green) |
-| S2-T6: transition actions (confirm, arrived, no-show, cancel with reason) | Next |
+| S2-T6: transition actions (confirm, arrived, no-show, cancel with reason) | Done (CI pending) |
 | Operator, specialist, portal, SMS | Not yet (S3–S5 and later) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

@@ -35,4 +35,16 @@ return [
     'submit_book' => 'ثبت نوبت',
     'submit_reschedule' => 'ثبت زمان جدید',
     'back' => 'بازگشت',
+    'actions_title' => 'تغییر وضعیت نوبت',
+    'no_actions' => 'برای این وضعیت کار دیگری لازم نیست.',
+    'action' => [
+        'confirmed' => 'تأیید نوبت',
+        'arrived' => 'ثبت حضور',
+        'no_show' => 'ثبت عدم حضور',
+        'cancelled' => 'لغو نوبت',
+    ],
+    'cancel_reason' => 'دلیل لغو',
+    'cancel_reason_hint' => 'کوتاه بنویسید. اطلاعات پزشکی را اینجا ننویسید.',
+    'status_changed' => 'وضعیت نوبت به «:status» تغییر کرد.',
+    'action_not_offered' => 'این تغییر وضعیت از این صفحه انجام نمی‌شود.',
 ];

@@ -369,4 +369,14 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 
 - **Why:** `RefreshDatabase` runs the migrations up, but nothing ran them down. Spec 19 asks for reversible migrations on a fresh database. This was the open item in S1-T1 and S2-T1.
 - **How:** both CI jobs run `migrate:fresh`, then `migrate:reset` (which calls every `down()` in reverse), then check that `migrate:status` shows no migration as run, then `migrate` again. SQLite runs in the `checks` job and MySQL 8 in the `mysql` job.
-- **Status:** the step is added in the commit that introduces it. It is green once its own CI run passes.
+- **Status:** green on `d10fb03` in both jobs. This is the first run that includes it.
+
+## 2026-11-17 — S2-T6: transition actions on the appointment page
+
+- **One route, four offered moves.** `POST /admin/appointments/{appointment}/status` (`admin.appointments.transition`, `appointment.manage`) takes `to` and, for a cancel, `cancel_reason`. The staff screen offers `confirmed`, `arrived`, `no_show` and `cancelled`. Any other value is refused at the HTTP layer, so `in_progress` and `completed` cannot be set from the staff screen until the S3 operator screens exist (see S2-T3). The state machine still allows them, so S3 only needs to add them to `AppointmentTransitionRequest::OFFERED`.
+- **The state machine decides.** `BookingService::transition()` locks the appointment row, reads the current status and refuses a move that `AppointmentStatus::canMoveTo()` does not allow. A stale page therefore gets a validation error, not a second move. Every accepted move writes one history row and one audit row.
+- **The cancel reason is required in the service,** not only in the form. A blank or spaces-only reason is refused (`cancel_reason`). The form field is optional at the HTTP layer, so there is one rule and one message.
+- **Cancel reason and the audit trail.** The reason is stored on the appointment and in the audit row's `changes`. This is a short staff note. The form hint asks staff not to write medical details there. The audit log must not hold medical text (spec 7.8). If the clinic wants the reason kept out of the audit row, it is a one-line change in `BookingService::transition()`. **Open question for the clinic.**
+- **Where the buttons are.** The edit page shows an action panel above the form, for every saved appointment. Reschedule stays in the form, which is still shown only for scheduled and confirmed appointments. Buttons are plain POST forms, so no JavaScript is needed.
+- **Errors** from the three keys (`status`, `to`, `cancel_reason`) show in the panel, in Persian. Messages come from `lang/fa/appointments.php` and `lang/fa/scheduling.php`.
+- **Not done:** buttons on the calendar blocks. Clicking a block already opens the appointment edit page, which has the panel.

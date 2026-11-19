@@ -329,3 +329,16 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **History is append-only in code:** the service only creates rows. A database trigger is deferred to S5, as with the audit log (S1-T3).
 - **Concurrency is tested on MySQL.** `tests/Concurrency/BookingRaceTest.php` starts two PHP processes that book the same device slot at the same moment, in three rounds. Exactly one must succeed. SQLite has no row locks and cannot share committed data with a second process, so the test is skipped there. The new CI job `mysql` runs the full suite on MySQL 8.0 (spec section 3).
 - **CI now annotates Pest failures.** On failure, each failing test appears as an annotation, because the raw log is not downloadable through the API.
+
+## 2026-11-17 — S2-T4: appointment form and free-slot endpoint
+
+- **Slots are computed in memory, by the same rules as `isFree`.** `SlotFinder` reads each table once for the whole range, rather than running `isFree` per candidate (hundreds of queries a week). Its tests use the same boundary cases as `AvailabilityServiceTest`: a booking may end exactly when another starts, and a slot may end exactly at the window's end.
+- **The start grid is 15 minutes** (`config('clinic.slot_step_minutes')`). A slot needs the whole service length to be free. The grid is aligned to clock times.
+- **Past times are hidden from the picker only.** `BookingService` still does not reject a booking in the past. Whether staff may book the past is an open question for the clinic.
+- **The picker shows free times only.** It returns no client data, covers at most 14 days, and needs at least one of specialist, device or room. Access is `appointment.manage` (admin and secretary). Other roles get 403, checked on the route and in the FormRequest.
+- **The end time is not an input.** It comes from the service's default length in `AppointmentRequest::bookingData()`, so a form cannot book a wrong-length slot.
+- **Edit is reschedule.** `/admin/appointments/{id}/edit` uses the same form. A cancelled, arrived or completed appointment shows a notice and no form. The status actions come in S2-T6.
+- **Plain JavaScript, not Alpine.** The form needs one behaviour: show the pickers a service needs, and fetch slots. That is about 150 lines of self-hosted vanilla JS (`public/js/appointment-form.js`), so no dependency was added. Without JavaScript, every picker is shown and the start time can be typed (Gregorian, `YYYY-MM-DD HH:MM`).
+- **The picker's date is Jalali.** The API parses `from_jalali` with `Jalali::parseToGregorian`. It does not accept Gregorian, because a Gregorian `2026-11-17` also parses as a valid Jalali year.
+- **Known limit: the client picker is a plain select** of every active client, ordered by name, with no search. This is fine for a small clinic. A client search picker is a follow-up before the list grows into the thousands.
+- **CI runs the MySQL suite as a separate job** and reports Pest totals and skipped tests on every run, so a skipped concurrency test is visible rather than hidden.

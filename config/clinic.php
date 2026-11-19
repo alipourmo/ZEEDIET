@@ -24,6 +24,9 @@ return [
         'end' => '20:00',
     ],
 
+    // Spacing, in minutes, of the start times offered by the appointment picker.
+    'slot_step_minutes' => 15,
+
     // Appointment reminders (section 9 of the spec).
     'reminder_hours_before' => (int) env('CLINIC_REMINDER_HOURS_BEFORE', 24),
     'reminder_window_minutes' => 15,

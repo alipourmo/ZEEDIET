@@ -31,15 +31,27 @@ final class AvailabilityService
      */
     public function isWorkingDay(CarbonInterface $day): bool
     {
+        return $this->closedReason($day) === null;
+    }
+
+    /**
+     * Why the day is closed: 'weekend' or 'holiday'. Null when the day is open. Weekend is checked first.
+     */
+    public function closedReason(CarbonInterface $day): ?string
+    {
         $local = $this->local($day);
 
         $weekend = array_map('intval', (array) config('clinic.weekend_days', []));
 
         if (in_array(Weekday::fromDate($local), $weekend, true)) {
-            return false;
+            return 'weekend';
         }
 
-        return ! Holiday::query()->whereDate('date', $local->toDateString())->exists();
+        if (Holiday::query()->whereDate('date', $local->toDateString())->exists()) {
+            return 'holiday';
+        }
+
+        return null;
     }
 
     /**
@@ -184,7 +196,7 @@ final class AvailabilityService
      *
      * @return list<string>
      */
-    private function slotStatuses(): array
+    public function slotStatuses(): array
     {
         $values = [];
 

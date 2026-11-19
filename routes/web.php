@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\AvailabilityController;
 use App\Http\Controllers\Admin\Catalog\DeviceController;
 use App\Http\Controllers\Admin\Catalog\RoomController;
 use App\Http\Controllers\Admin\Catalog\ServiceController;
@@ -92,6 +94,16 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
     Route::post('admin/users/{user}/reset-password', [UserController::class, 'resetPassword'])
         ->name('admin.users.reset-password')
         ->middleware('can:user.manage');
+
+    // Appointments (spec sections 7.2 and 8.2). Admin and secretary: appointment.manage on each route. The availability
+    // picker reads free times only and exposes no client data.
+    Route::resource('admin/appointments', AppointmentController::class)
+        ->names('admin.appointments')
+        ->only(['create', 'store', 'edit', 'update'])
+        ->middleware('can:appointment.manage');
+    Route::get('admin/api/availability', [AvailabilityController::class, 'slots'])
+        ->name('admin.api.availability')
+        ->middleware('can:appointment.manage');
 
     // Admin only, by the audit.view Gate (spec sections 5 and 8.2).
     Route::get('/admin/audit', [AuditLogController::class, 'index'])

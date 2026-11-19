@@ -121,6 +121,16 @@ jobs:
               print(f"::notice title=Pest skipped::{name}")
           PY
 
+      # Every migration must roll back on a fresh database and then migrate forward again. RefreshDatabase only
+      # checks the up direction.
+      - name: Migrations are reversible on a fresh database
+        run: |
+          touch database/database.sqlite
+          php artisan migrate:fresh --force
+          php artisan migrate:reset --force
+          if php artisan migrate:status | grep -q "Ran"; then echo "::error::migrations still marked as run after reset"; exit 1; fi
+          php artisan migrate --force
+
   # The whole suite again on MySQL 8, the production database (spec section 3). This runs the concurrency test,
   # which needs real row locks, and checks that nothing depends on SQLite behaviour.
   mysql:
@@ -215,3 +225,13 @@ jobs:
               print(f"skipped: {name}")
               print(f"::notice title=Pest skipped::{name}")
           PY
+
+      # Every migration must roll back on a fresh database and then migrate forward again. RefreshDatabase only
+      # checks the up direction.
+      - name: Migrations are reversible on a fresh database
+        run: |
+          touch database/database.sqlite
+          php artisan migrate:fresh --force
+          php artisan migrate:reset --force
+          if php artisan migrate:status | grep -q "Ran"; then echo "::error::migrations still marked as run after reset"; exit 1; fi
+          php artisan migrate --force

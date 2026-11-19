@@ -342,3 +342,31 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **The picker's date is Jalali.** The API parses `from_jalali` with `Jalali::parseToGregorian`. It does not accept Gregorian, because a Gregorian `2026-11-17` also parses as a valid Jalali year.
 - **Known limit: the client picker is a plain select** of every active client, ordered by name, with no search. This is fine for a small clinic. A client search picker is a follow-up before the list grows into the thousands.
 - **CI runs the MySQL suite as a separate job** and reports Pest totals and skipped tests on every run, so a skipped concurrency test is visible rather than hidden.
+
+## 2026-11-17 — S2-T2: availability rules
+
+- **Order of checks** in `AvailabilityService::isFree`: working day first (holiday, then weekend from config), then the schedule window, then conflicts. The first failure decides the reason shown, so a holiday is named as a holiday even when it has no hours.
+- **Schedule window:** the whole interval must lie inside one schedule row for that resource and weekday. Two adjacent rows do not make a window, because the spec says "inside a schedules row".
+- **Overlap is strict** (spec 7.1): `existing.starts_at < new.ends_at AND existing.ends_at > new.starts_at`. An appointment that ends exactly when the next starts does not conflict. This is tested at the boundary.
+- **Blocking statuses:** every status except `cancelled` and `no_show` blocks time, including `completed` (spec 7.1 names only those two as non-blocking).
+- **Client overlap** uses the same rule and statuses, so one client cannot hold two active appointments at once (spec 7.2).
+- **`problems()`** returns messages keyed by form field (`starts_at`, `device_id`, `specialist_id`, `room_id`, `client_id`). `BookingService` shows them on the field at fault.
+- **Read only.** `isFree` never writes. `BookingService` runs it again inside its locked transaction, so a slot checked here can still be taken by the time a booking is saved.
+
+## 2026-11-17 — S2-T5: calendar views
+
+- **Ranges are half-open** `[from, to)`. A week runs Saturday to Friday, matching the working week. The month grid is six full Saturday-start weeks, so every day of the month sits in a row and the grid height never changes.
+- **Closed days** are holidays (`holiday`) and `config('clinic.weekend_days')` (`weekend`). Both are shown on the day, and both are labelled in Persian, not by colour alone.
+- **Day and week show blocks**, one per appointment, coloured by status. The status label is always printed in the block, so colour is not the only cue.
+- **Month shows counts** per day, from one grouped query. It does not load appointment rows.
+- **Filters:** specialist, device, room and status. The date is a Jalali string, parsed by `Jalali::parseToGregorian`.
+- **Access:** `appointment.view_all`, held by admin and secretary. `CalendarService` checks the same permission, so a call from another path also raises `AuthorizationException`. Admin and secretary both see every appointment. No operator or specialist calendar exists yet (S3 and S4).
+- **Query budget:** day and week eager-load five relations (client, service, specialist, device, room) and run one holiday query and three filter-dropdown queries. Month runs one grouped count. Tests assert the cap of 15 with `DB::getQueryLog()` for day, week and month.
+- **No JavaScript.** Navigation is links that keep the filters, so the calendar works without JS.
+- **Persian digits and titles** come from `lang/fa/calendar.php` and `Digits::toPersian`.
+
+## 2026-11-17 — S2: migration reversibility check in CI
+
+- **Why:** `RefreshDatabase` runs the migrations up, but nothing ran them down. Spec 19 asks for reversible migrations on a fresh database. This was the open item in S1-T1 and S2-T1.
+- **How:** both CI jobs run `migrate:fresh`, then `migrate:reset` (which calls every `down()` in reverse), then check that `migrate:status` shows no migration as run, then `migrate` again. SQLite runs in the `checks` job and MySQL 8 in the `mysql` job.
+- **Status:** the step is added in the commit that introduces it. It is green once its own CI run passes.

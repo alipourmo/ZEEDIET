@@ -193,6 +193,7 @@ final class CalendarService
 
     /**
      * @param  array<string, int|string>  $filters
+     * @return Builder<Appointment>
      */
     private function filtered(CarbonImmutable $from, CarbonImmutable $to, array $filters): Builder
     {
@@ -234,7 +235,7 @@ final class CalendarService
         return [
             'time' => Digits::toPersian($appointment->time('starts_at')->format('H:i')),
             'client' => $appointment->client?->fullName() ?? (string) __('calendar.unknown_client'),
-            'service' => $appointment->service?->name ?? '',
+            'service' => $appointment->service->name,
             'status' => $status->value,
             'label' => (string) __('scheduling.status.'.$status->value),
             'url' => route('admin.appointments.edit', $appointment),

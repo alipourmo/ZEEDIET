@@ -29,7 +29,7 @@ class CalendarController extends Controller
     public function index(CalendarRequest $request): View
     {
         $view = $request->view();
-        $date = $request->date();
+        $date = $request->anchorDate();
         $filters = $request->filters();
         $actor = $request->actor();
         [$from, $to] = $this->calendar->range($view, $date);
@@ -45,7 +45,7 @@ class CalendarController extends Controller
             ->whereDate('date', '>=', $from->format('Y-m-d'))
             ->whereDate('date', '<', $to->format('Y-m-d'))
             ->get()
-            ->mapWithKeys(fn (Holiday $holiday): array => [$holiday->date->format('Y-m-d') => $holiday->title])
+            ->mapWithKeys(fn (Holiday $holiday): array => [CarbonImmutable::parse($holiday->getAttribute('date'))->format('Y-m-d') => $holiday->title])
             ->all();
 
         return view('admin.calendar.index', [

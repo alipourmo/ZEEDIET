@@ -73,7 +73,9 @@ jobs:
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github
 
       - name: Pest
-        run: vendor/bin/pest --log-junit build/junit.xml
+        run: |
+          mkdir -p build
+          vendor/bin/pest --log-junit build/junit.xml 2>&1 | tee build/pest.log
 
       # Only on failure: one annotation per failing test, so the cause is readable without the raw log.
       - name: Summarise Pest results
@@ -81,10 +83,21 @@ jobs:
         run: |
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
           try:
               root = ET.parse('build/junit.xml').getroot()
           except Exception as error:
               print(f"::error::no JUnit report: {error}")
+              log = ''
+              try:
+                  with open('build/pest.log', encoding='utf8') as handle:
+                      log = handle.read()
+              except OSError:
+                  pass
+              for offset in range(max(0, len(log) - 3600), len(log), 1200):
+                  print(f"::error title=Pest log::{escape(log[offset:offset + 1200])}")
               raise SystemExit(0)
           count = 0
           for case in root.iter('testcase'):
@@ -156,17 +169,30 @@ jobs:
           php artisan key:generate --ansi
 
       - name: Pest on MySQL
-        run: vendor/bin/pest --log-junit build/junit.xml
+        run: |
+          mkdir -p build
+          vendor/bin/pest --log-junit build/junit.xml 2>&1 | tee build/pest.log
 
       - name: Summarise Pest results
         if: always()
         run: |
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
           try:
               root = ET.parse('build/junit.xml').getroot()
           except Exception as error:
               print(f"::error::no JUnit report: {error}")
+              log = ''
+              try:
+                  with open('build/pest.log', encoding='utf8') as handle:
+                      log = handle.read()
+              except OSError:
+                  pass
+              for offset in range(max(0, len(log) - 3600), len(log), 1200):
+                  print(f"::error title=Pest log::{escape(log[offset:offset + 1200])}")
               raise SystemExit(0)
           count = 0
           for case in root.iter('testcase'):

@@ -59,7 +59,7 @@ final class CalendarRequest extends FormRequest
     /**
      * The anchor date: the Jalali date given, or today, at Tehran midnight.
      */
-    public function date(): CarbonImmutable
+    public function anchorDate(): CarbonImmutable
     {
         $raw = (string) $this->input('date', '');
         $gregorian = $raw === '' ? null : Jalali::parseToGregorian($raw);

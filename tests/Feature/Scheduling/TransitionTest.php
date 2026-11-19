@@ -66,8 +66,8 @@ test('each offered move writes one status history row and one audit row', functi
 
     $history = AppointmentStatusHistory::query()->where('appointment_id', $appointment->getKey())->get();
     expect($history)->toHaveCount(1)
-        ->and($history->first()->from_status)->toBe($from->value)
-        ->and($history->first()->to_status)->toBe($to);
+        ->and($history->first()->from_status)->toBe($from)
+        ->and($history->first()->to_status)->toBe(AppointmentStatus::from($to));
 
     expect(AuditLog::query()->where('action', AuditAction::Update->value)->where('subject_id', $appointment->getKey())->count())
         ->toBe(1);

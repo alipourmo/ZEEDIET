@@ -85,7 +85,7 @@ final class SlotFinder
 
     /**
      * @param  array<string, int>  $resources
-     * @return array<string, array<int, list<array{int, int}>>>  column, then weekday, then [start, end] in minutes
+     * @return array<string, array<int, list<array{int, int}>>> column, then weekday, then [start, end] in minutes
      */
     private function windows(array $resources): array
     {

@@ -38,8 +38,8 @@ jobs:
         run: vendor/bin/pest --log-junit build/junit.xml
 
       # Only on failure: one annotation per failing test, so the cause is readable without the raw log.
-      - name: Summarise Pest failures
-        if: failure()
+      - name: Summarise Pest results
+        if: always()
         run: |
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
@@ -56,7 +56,16 @@ jobs:
                       if count <= 12:
                           message = (child.get('message') or child.text or '').replace('\n', ' | ')[:400]
                           print(f"::error title=Pest {child.tag}::{case.get('name')} :: {message}")
-          print(f"failing tests: {count}")
+          tests = skipped = 0
+          names = []
+          for case in root.iter('testcase'):
+              tests += 1
+              if any(child.tag == 'skipped' for child in case):
+                  skipped += 1
+                  names.append(case.get('name'))
+          print(f"failing tests: {count}; tests run: {tests}; skipped: {skipped}")
+          for name in names[:20]:
+              print(f"skipped: {name}")
           PY
 
   # The whole suite again on MySQL 8, the production database (spec section 3). This runs the concurrency test,
@@ -109,8 +118,8 @@ jobs:
       - name: Pest on MySQL
         run: vendor/bin/pest --log-junit build/junit.xml
 
-      - name: Summarise Pest failures
-        if: failure()
+      - name: Summarise Pest results
+        if: always()
         run: |
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
@@ -127,5 +136,14 @@ jobs:
                       if count <= 12:
                           message = (child.get('message') or child.text or '').replace('\n', ' | ')[:400]
                           print(f"::error title=Pest {child.tag}::{case.get('name')} :: {message}")
-          print(f"failing tests: {count}")
+          tests = skipped = 0
+          names = []
+          for case in root.iter('testcase'):
+              tests += 1
+              if any(child.tag == 'skipped' for child in case):
+                  skipped += 1
+                  names.append(case.get('name'))
+          print(f"failing tests: {count}; tests run: {tests}; skipped: {skipped}")
+          for name in names[:20]:
+              print(f"skipped: {name}")
           PY

@@ -86,11 +86,18 @@ final class ScheduleService
      */
     public function groups(): array
     {
-        $counts = Schedule::query()
+        $counts = [];
+
+        $rows = Schedule::query()
             ->selectRaw('resource_type, resource_id, COUNT(*) AS days')
             ->groupBy('resource_type', 'resource_id')
-            ->get()
-            ->mapWithKeys(fn ($row): array => [$row->resource_type->value.':'.$row->resource_id => (int) $row->days]);
+            ->get();
+
+        foreach ($rows as $row) {
+            /** @var ScheduleResource $type */
+            $type = $row->getAttribute('resource_type');
+            $counts[$type->value.':'.$row->getAttribute('resource_id')] = (int) $row->getAttribute('days');
+        }
 
         $specialists = User::query()->where('role', StaffRole::Specialist->value)->orderBy('name')->get();
         $devices = Device::query()->orderBy('name')->get();

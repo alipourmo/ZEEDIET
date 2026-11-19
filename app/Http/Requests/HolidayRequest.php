@@ -42,7 +42,8 @@ class HolidayRequest extends FormRequest
                 return;
             }
 
-            $query = Holiday::query()->where('date', $gregorian);
+            // whereDate, not where: the date cast stores a datetime, so a plain string comparison misses the row.
+            $query = Holiday::query()->whereDate('date', $gregorian);
             $current = $this->route('holiday');
 
             if ($current instanceof Holiday) {

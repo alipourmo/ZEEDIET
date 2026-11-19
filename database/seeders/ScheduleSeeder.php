@@ -38,10 +38,12 @@ class ScheduleSeeder extends Seeder
         }
 
         foreach ((array) config('clinic.holidays', []) as $holiday) {
-            Holiday::query()->firstOrCreate(
-                ['date' => $holiday['date']],
-                ['title' => $holiday['title']],
-            );
+            // whereDate: see HolidayRequest, the stored date includes a time part.
+            $exists = Holiday::query()->whereDate('date', $holiday['date'])->exists();
+
+            if (! $exists) {
+                Holiday::query()->create(['date' => $holiday['date'], 'title' => $holiday['title']]);
+            }
         }
     }
 

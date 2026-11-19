@@ -78,7 +78,11 @@ test('saving again replaces the whole week rather than adding rows', function ()
     $device = Device::factory()->create();
 
     $this->actingAs($admin)->put("/admin/schedules/device/{$device->getKey()}", weekPayload());
-    $this->actingAs($admin)->put("/admin/schedules/device/{$device->getKey()}", weekPayload([0 => ['enabled' => '1', 'start' => '08:00', 'end' => '12:00']]));
+
+    // Second save: only Saturday is switched on, so the six days of the first save must disappear.
+    $this->actingAs($admin)->put("/admin/schedules/device/{$device->getKey()}", ['days' => [
+        0 => ['enabled' => '1', 'start' => '08:00', 'end' => '12:00'],
+    ]]);
 
     expect(Schedule::query()->where('resource_id', $device->getKey())->count())->toBe(1);
 });

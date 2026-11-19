@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\AppointmentSource;
 use App\Enums\AppointmentStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,6 +47,28 @@ class Appointment extends Model
             'status' => AppointmentStatus::class,
             'source' => AppointmentSource::class,
         ];
+    }
+
+    /**
+     * The current status with its enum type. Larastan reads the cast column as a string, so the callers use this.
+     */
+    public function currentStatus(): AppointmentStatus
+    {
+        /** @var AppointmentStatus $status */
+        $status = $this->getAttribute('status');
+
+        return $status;
+    }
+
+    /**
+     * The start or end as a Carbon instance, with its type made explicit (see currentStatus()).
+     */
+    public function time(string $column): CarbonInterface
+    {
+        /** @var CarbonInterface $time */
+        $time = $this->getAttribute($column);
+
+        return $time;
     }
 
     /**

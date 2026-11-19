@@ -104,7 +104,7 @@ final class BookingService
                 $this->optionalId($data, 'specialist_id'),
             );
 
-            $status = $current->status;
+            $status = $current->currentStatus();
 
             if (! in_array($status, [AppointmentStatus::Scheduled, AppointmentStatus::Confirmed], true)) {
                 throw ValidationException::withMessages(['status' => __('scheduling.reschedule_not_allowed')]);
@@ -144,7 +144,7 @@ final class BookingService
     {
         return DB::transaction(function () use ($appointment, $to, $actor, $reason): Appointment {
             $current = Appointment::query()->whereKey($appointment->getKey())->lockForUpdate()->firstOrFail();
-            $from = $current->status;
+            $from = $current->currentStatus();
 
             if (! $from->canMoveTo($to)) {
                 throw ValidationException::withMessages(['status' => __('scheduling.illegal_transition', [
@@ -161,7 +161,7 @@ final class BookingService
 
             $old = ['status' => $from->value];
 
-            $current->status = $to;
+            $current->setAttribute('status', $to);
 
             if ($to === AppointmentStatus::Cancelled) {
                 $current->cancel_reason = $reason;
@@ -312,9 +312,9 @@ final class BookingService
             'specialist_id' => $appointment->specialist_id,
             'device_id' => $appointment->device_id,
             'room_id' => $appointment->room_id,
-            'starts_at' => $appointment->starts_at?->format('Y-m-d H:i'),
-            'ends_at' => $appointment->ends_at?->format('Y-m-d H:i'),
-            'status' => $appointment->status->value,
+            'starts_at' => $appointment->time('starts_at')->format('Y-m-d H:i'),
+            'ends_at' => $appointment->time('ends_at')->format('Y-m-d H:i'),
+            'status' => $appointment->currentStatus()->value,
         ];
     }
 }

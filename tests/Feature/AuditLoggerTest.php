@@ -23,7 +23,8 @@ test('a log entry records the signed-in user as actor, plus the subject and clie
         ->and($log->subject_type)->toBe(User::class)
         ->and($log->subject_id)->toBe($subject->id)
         ->and($log->client_id)->toBe(7)
-        ->and($log->changes)->toBe(['old' => ['name' => 'A'], 'new' => ['name' => 'B']])
+        // toEqual, not toBe: MySQL's JSON column does not keep key order, and order does not matter here.
+        ->and($log->changes)->toEqual(['old' => ['name' => 'A'], 'new' => ['name' => 'B']])
         ->and($log->created_at)->not->toBeNull();
 });
 
@@ -50,7 +51,7 @@ test('passwords and tokens are removed from changes, at any depth', function () 
 
     $log = AuditLog::query()->sole();
 
-    expect($log->changes)->toBe([
+    expect($log->changes)->toEqual([
         'old' => ['name' => 'A'],
         'new' => ['name' => 'B', 'nested' => ['note' => 'ok']],
     ]);

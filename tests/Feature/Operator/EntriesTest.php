@@ -5,9 +5,11 @@ declare(strict_types=1);
 use App\Enums\MeasurementSetStatus;
 use App\Enums\StaffRole;
 use App\Models\Client;
+use App\Models\ClientMedical;
 use App\Models\Device;
 use App\Models\DeviceSession;
 use App\Models\MeasurementSet;
+use App\Models\MeasurementType;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\MeasurementTypeSeeder;
@@ -22,7 +24,7 @@ function entSession(User $operator, Client $client, CarbonImmutable $performedAt
 {
     return DeviceSession::factory()->create([
         'client_id' => $client->getKey(),
-        'device_id' => Device::factory()->create(['name' => 'دستگاه تست']),
+        'device_id' => Device::factory(),
         'operator_id' => $operator->getKey(),
         'session_number' => $number,
         'performed_at' => $performedAt,
@@ -67,7 +69,7 @@ test('the measurement row shows the values the operator entered', function () {
         'recorded_by' => $me->getKey(),
         'status' => MeasurementSetStatus::PendingReview,
     ]);
-    $set->measurements()->create(['measurement_type_id' => \App\Models\MeasurementType::query()->where('key', 'weight')->value('id'), 'value' => '72.5']);
+    $set->measurements()->create(['measurement_type_id' => MeasurementType::query()->where('key', 'weight')->value('id'), 'value' => '72.5']);
 
     $this->actingAs($me)
         ->get(route('operator.entries'))
@@ -80,7 +82,7 @@ test('the page shows no phone digits and no medical free text', function () {
     $me = entOperator();
     $client = Client::factory()->create(['mobile' => '09121234567']);
     $client->load('medical');
-    \App\Models\ClientMedical::query()->create(['client_id' => $client->getKey(), 'food_allergies' => 'گردو', 'device_contraindications' => []]);
+    ClientMedical::query()->create(['client_id' => $client->getKey(), 'food_allergies' => 'گردو', 'device_contraindications' => []]);
 
     entSession($me, $client, CarbonImmutable::now('Asia/Tehran')->setTime(9, 0));
 

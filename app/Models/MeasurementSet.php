@@ -42,10 +42,29 @@ class MeasurementSet extends Model
         ];
     }
 
+    /**
+     * A published set is immutable (spec 7.4). The only change allowed after publish is superseded_at, which is set on
+     * the old set when a correction is published. Everything else is refused here, so no code path can edit it.
+     */
     protected static function booted(): void
     {
         static::deleting(function (): void {
             throw new LogicException('Measurement sets cannot be deleted.');
+        });
+
+        static::updating(function (MeasurementSet $set): void {
+            $original = $set->getOriginal('status');
+            $originalStatus = $original instanceof MeasurementSetStatus ? $original->value : (string) $original;
+
+            if ($originalStatus !== MeasurementSetStatus::Published->value) {
+                return;
+            }
+
+            $changed = array_diff(array_keys($set->getDirty()), ['superseded_at', 'updated_at']);
+
+            if ($changed !== [] || $set->getOriginal('superseded_at') !== null) {
+                throw new LogicException('A published measurement set is immutable. Publish a correction instead.');
+            }
         });
     }
 

@@ -36,6 +36,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S3-T3: session recording (contraindication refusal, numbering under lock, package link, finish) | Done (CI green) |
 | S3-T4: measurement types and the operator's measurement form (range validation, Persian digits) | Done (CI green) |
 | S3-T5: operator's own entries, last seven days (read-only) | Done (CI green) |
+| S4-T1: report workflow (publish, return, correct; immutable published sets) | Built (CI pending) |
 | Operator, specialist, portal, SMS | Not yet (S3–S5 and later) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

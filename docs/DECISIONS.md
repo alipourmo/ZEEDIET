@@ -440,3 +440,13 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Audit:** each package creation writes an audit row (service, total, price, date). No client medical data is written.
 - **Access:** `package.manage` (admin and secretary), as in spec 5.
 - **Known limit:** a package for a client with several device services is chosen by service at recording time (S3-T3), not on the package page.
+
+## 2026-11-17 — S4-T1: report workflow (publish, return, correct)
+
+- **One service for the state changes.** `ReportWorkflow` owns publish, return to operator and correct. Each checks `measurement.review` itself, not only the route, so a service caller cannot skip it. Admin and specialist hold the permission; operator and secretary do not.
+- **Publish.** A pending set becomes published with `reviewed_by` and `published_at` (Tehran time). It writes one `publish` audit row and dispatches `ReportPublished`. S5 attaches the `report_ready` SMS to the event. S4 queues nothing yet and sends nothing.
+- **Immutability is in the models, not only the services.** `MeasurementSet` refuses any change to a published set except setting `superseded_at` (once). `Measurement` refuses create, update and delete on a published set. The service checks are for clear messages. A bulk `query()->update()` still bypasses model events, so no code path uses one on sets.
+- **Correction flow.** `correct()` creates a new pending set with `supersedes_id` pointing at the published set. The old set stays current until the correction is published. On publish the old set gets `superseded_at` in the same transaction. Only one pending correction may exist per set. The chart and client views use `MeasurementSet::current()` (published and not superseded), so they only show the latest version.
+- **Return to operator.** The set stays pending and the comment is stored in `measurement_sets.note` (spec 8.4). This replaces the operator's note. The comment is required and is not written to the audit log, since it may name medical detail. The audit row records that the set was returned.
+- **Specialist edit before publish.** `MeasurementRecorder::replaceValues()` changes values of a pending set only. It uses the same range and precision checks as recording.
+- **Open:** whether the operator's note should be kept separately from the specialist's return comment. The spec puts the comment in `note`, so this build follows it.

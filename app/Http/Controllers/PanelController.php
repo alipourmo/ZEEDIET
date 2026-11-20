@@ -19,7 +19,10 @@ class PanelController extends Controller
 
     public function operator(): View
     {
-        return $this->panel('operator', ['todayUrl' => route('operator.today')]);
+        return $this->panel('operator', [
+            'todayUrl' => route('operator.today'),
+            'entriesUrl' => route('operator.entries'),
+        ]);
     }
 
     public function specialist(): View

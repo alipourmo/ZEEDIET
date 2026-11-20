@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Operator\EntriesController as OperatorEntriesController;
 use App\Http\Controllers\Operator\MeasurementController as OperatorMeasurementController;
 use App\Http\Controllers\Operator\SessionController as OperatorSessionController;
 use App\Http\Controllers\Operator\TodayController as OperatorTodayController;
@@ -134,6 +135,11 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
 
 Route::middleware(['auth', 'area:operator'])->group(function (): void {
     Route::get('/operator', [PanelController::class, 'operator'])->name('operator.home');
+
+    // The operator's own entries from the last seven days, read-only (spec section 8.3).
+    Route::get('/operator/entries', [OperatorEntriesController::class, 'index'])
+        ->middleware('can:session.view')
+        ->name('operator.entries');
 
     // Today's device appointments (spec section 8.3). Only today: see TodayAppointments.
     Route::get('/operator/today', [OperatorTodayController::class, 'index'])

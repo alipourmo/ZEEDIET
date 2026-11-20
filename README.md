@@ -6,7 +6,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 
 ## Status
 
-**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is done: S1-T1 to S1-T7 are complete (CI green on `0139170`). S2 (scheduling) is done: S2-T1 to S2-T6 are complete (CI green on `a3ec3d9`). S3 (operator, packages, measurements) is in progress: S3-T1 is complete (CI green); S3-T2 is complete (CI green on `3c5fda7`). S3-T3 is complete (CI green on `85dc4eb`). Sprint notes: [docs/sprints/S3.md](docs/sprints/S3.md). Sprint notes: [docs/sprints/S2.md](docs/sprints/S2.md).
+**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is done: S1-T1 to S1-T7 are complete (CI green on `0139170`). S2 (scheduling) is done: S2-T1 to S2-T6 are complete (CI green on `a3ec3d9`). S3 (operator, packages, measurements) is in progress: S3-T1 is complete (CI green); S3-T2 is complete (CI green on `3c5fda7`). S3-T3 is complete (CI green on `85dc4eb`). S3-T4 is complete (CI green on `bea0e66`). S3-T5 is built, waiting for CI. Sprint notes: [docs/sprints/S3.md](docs/sprints/S3.md). Sprint notes: [docs/sprints/S2.md](docs/sprints/S2.md).
 
 | Area | State |
 |---|---|
@@ -34,6 +34,8 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S3-T1: session packages and device sessions schema; package pages; remaining sessions | Done (CI green) |
 | S3-T2: operator's list for today (device appointments, last 4 digits, alert flags) | Done (CI green) |
 | S3-T3: session recording (contraindication refusal, numbering under lock, package link, finish) | Done (CI green) |
+| S3-T4: measurement types and the operator's measurement form (range validation, Persian digits) | Done (CI green) |
+| S3-T5: operator's own entries, last seven days (read-only) | Built (CI pending) |
 | Operator, specialist, portal, SMS | Not yet (S3–S5 and later) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

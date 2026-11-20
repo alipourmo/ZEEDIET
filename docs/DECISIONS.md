@@ -387,6 +387,13 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Fix:** both Pest steps run `set -o pipefail` first. The summary step still runs on failure (`if: always()`), so the cause shows as an annotation.
 - **Check:** a green Pest step now means Pest passed. Before trusting a green run, check the totals notice (`0 failing`).
 
+## 2026-11-17 — S3-T5: operator's entries, last seven days
+
+- **Read-only.** `GET /operator/entries` (`operator.entries`), in `area:operator` with `can:session.view`. No forms on the page.
+- **Own entries only.** Device sessions with `operator_id` = the user, and measurement sets with `recorded_by` = the user. The window is the last seven clinic days, from midnight, seven days back, to now.
+- **Measurement rows show the values** the operator entered, and the set's status (pending review or published). Client names only: no phone numbers and no medical free text.
+- **No pagination.** One operator's seven days is bounded by the clinic's day. If it grows, add paging with the existing pager component.
+
 ## 2026-11-17 — S3-T4: measurement form (operator)
 
 - **Schema from spec 6.4.** `measurement_types` (seeded, idempotent: `firstOrCreate` by key, so an admin's changes survive a re-seed), `measurement_sets` (client, date, recorder, status, reviewer, publish time, supersedes, superseded, note) and `measurements` (decimal(6,2), unique per set and type). Sets cannot be deleted in the model.

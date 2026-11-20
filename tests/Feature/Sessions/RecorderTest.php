@@ -134,7 +134,7 @@ test('a session on a contraindicated device is refused, nothing is saved, and th
         ->and($row->subject_type)->toBe(Appointment::class)
         ->and((int) $row->client_id)->toBe($client->getKey())
         ->and(recDiff((array) json_decode((string) $row->changes, true), ['device_id' => (int) $device->getKey(), 'keys' => ['pregnancy']]))
-            ->toBe('same');
+        ->toBe('same');
 });
 
 test('an appointment that is not open for a session is refused', function (string $case) {

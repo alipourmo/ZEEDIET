@@ -131,10 +131,16 @@ final class ReportWorkflow
             /** @var Client $client */
             $client = Client::query()->findOrFail($target->client_id);
 
+            // The date cast is a Carbon at runtime, but Larastan reads it as a string, so the type is checked here.
+            $measured = $target->getAttribute('measured_at');
+            $measuredAt = $measured instanceof \DateTimeInterface
+                ? CarbonImmutable::instance($measured)
+                : CarbonImmutable::parse((string) $measured, 'Asia/Tehran');
+
             return $this->recorder->record(
                 $client,
                 $reviewer,
-                CarbonImmutable::instance($target->measured_at),
+                $measuredAt,
                 $values,
                 $note,
                 (int) $target->getKey(),

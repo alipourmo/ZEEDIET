@@ -386,3 +386,16 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **What went wrong:** the Pest step pipes its output into `tee` so the log can be shown on failure. A pipeline's exit status is that of its last command, so `tee` hid Pest's failure, and the step reported success. The runner's default shell does not set `pipefail`.
 - **Fix:** both Pest steps run `set -o pipefail` first. The summary step still runs on failure (`if: always()`), so the cause shows as an annotation.
 - **Check:** a green Pest step now means Pest passed. Before trusting a green run, check the totals notice (`0 failing`).
+
+## 2026-11-17 — S3-T1: session packages and device sessions
+
+- **Schema from spec 6.3.** `session_packages` and `device_sessions` are created now. The device session rows are written in S3-T3, but the remaining-sessions count needs the table to exist now.
+- **Unique (client, device, session_number).** `SessionRecorder` computes the next number inside a transaction (S3-T3). The unique key is the last line of defence: two sessions for the same client and device cannot share a number.
+- **Remaining sessions are computed, never stored.** `SessionPackage::remainingSessions()` is total minus done sessions. The package list loads the done count with `withCount`, so one query covers the page. Cancelled and missed sessions do not use a package (spec 6.3).
+- **Only device services are sold as packages.** The form lists active services of kind `device_session`. A consultation cannot be sold as a package.
+- **No edit and no delete in S3.** A package is a financial record. `SessionPackage` and `DeviceSession` refuse delete in the model, like `ClientMedical`. Editing a package (for example to correct the price) is not offered yet.
+- **Price** is optional and in Toman. Payments come in S4, so the price is recorded only.
+- **Purchase date** is typed in Jalali and stored as Gregorian in `purchased_at`.
+- **Audit:** each package creation writes an audit row (service, total, price, date). No client medical data is written.
+- **Access:** `package.manage` (admin and secretary), as in spec 5.
+- **Known limit:** a package for a client with several device services is chosen by service at recording time (S3-T3), not on the package page.

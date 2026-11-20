@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Catalog\ServiceController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientMedicalController;
 use App\Http\Controllers\Admin\HolidayController;
+use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -108,6 +109,14 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
     Route::get('admin/api/availability', [AvailabilityController::class, 'slots'])
         ->name('admin.api.availability')
         ->middleware('can:appointment.manage');
+
+    // Session packages (spec sections 6.3 and 8.2). Admin and secretary: package.manage on each route. No edit and no
+    // delete: a package is a financial record.
+    Route::prefix('admin/packages')->name('admin.packages.')->middleware('can:package.manage')->group(function (): void {
+        Route::get('/', [PackageController::class, 'index'])->name('index');
+        Route::get('/create', [PackageController::class, 'create'])->name('create');
+        Route::post('/', [PackageController::class, 'store'])->name('store');
+    });
 
     // Calendar (spec section 8.2): day, week and month. Every row needs appointment.view_all.
     Route::get('admin/calendar', [CalendarController::class, 'index'])

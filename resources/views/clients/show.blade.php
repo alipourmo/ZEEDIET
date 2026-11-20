@@ -5,11 +5,14 @@
 @section('content')
     <div class="page-head">
         <h1 class="page-title">{{ $client->fullName() }} <span dir="ltr">{{ \App\Support\Digits::toPersian($client->code) }}</span></h1>
-        @if ($editUrl)
-            <div class="form__actions">
+        <div class="form__actions">
+            @if (isset($packagesUrl) && $packagesUrl)
+                <a class="btn btn--secondary" href="{{ $packagesUrl }}">{{ __('packages.client_link') }}</a>
+            @endif
+            @if ($editUrl)
                 <a class="btn btn--secondary" href="{{ $editUrl }}">{{ __('clients.edit') }}</a>
-            </div>
-        @endif
+            @endif
+        </div>
     </div>
 
     @if ($badges)

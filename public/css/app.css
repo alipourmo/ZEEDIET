@@ -583,3 +583,21 @@ main {
     .calendar-cell { min-height: 48px; padding: 4px; }
     .calendar-week { grid-template-columns: repeat(7, minmax(130px, 1fr)); }
 }
+
+/* Operator screens (spec sections 8.3 and 11): large touch targets, at least 44px high. */
+.operator-group { margin-block-end: 1.5rem; }
+.operator-group__title { font-size: 1.125rem; color: var(--muted); margin-block: 0 0.5rem; }
+.operator-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.operator-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.operator-row__time { font-weight: 700; font-size: 1.125rem; min-inline-size: 4rem; }
+.operator-row__body { flex: 1; min-inline-size: 0; }
+.operator-row__name { font-weight: 700; font-size: 1.125rem; }

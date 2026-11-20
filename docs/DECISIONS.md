@@ -387,6 +387,16 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Fix:** both Pest steps run `set -o pipefail` first. The summary step still runs on failure (`if: always()`), so the cause shows as an annotation.
 - **Check:** a green Pest step now means Pest passed. Before trusting a green run, check the totals notice (`0 failing`).
 
+## 2026-11-17 — S3-T2: operator list for today
+
+- **Today is the clinic day.** `TodayAppointments::today()` is midnight in `Asia/Tehran`. The list uses the same comparison as S2 (clinic-local `Y-m-d H:i:s` against `starts_at`).
+- **What is listed.** Appointments that start today, need a device (`service.requires_device`), and are not cancelled or no-show. Consultations and body analyses are not listed. Soft-deleted clients are left out.
+- **Phone digits.** The client's mobile shows only the last four digits, as `پایان شماره`. The full number is never rendered.
+- **Alert badges.** Only the computed flags (allergy yes or no, device contraindications, pregnancy), read through `ClientAlertBadges::medicalSelect()`. Free-text medical fields are not loaded, and the badges are not shown to a role without `medical.view_alerts`. As on the client file, this read is not audited because it is a flag, not medical text.
+- **Route.** `GET /operator/today` (`operator.today`) is inside `area:operator` and `can:appointment.view_today`. The operator home page links to it.
+- **Touch targets.** Rows are at least 44px high, with status chips from `components/badge`.
+- **Not yet.** Opening a record from the list is S3-T3. `TodayAppointments::isToday()` is the check it will use.
+
 ## 2026-11-17 — S3-T1: session packages and device sessions
 
 - **Schema from spec 6.3.** `session_packages` and `device_sessions` are created now. The device session rows are written in S3-T3, but the remaining-sessions count needs the table to exist now.

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Operator\TodayController as OperatorTodayController;
 use App\Http\Controllers\PanelController;
 use App\Http\Controllers\PreviewController;
 use App\Http\Controllers\Specialist\ClientController as SpecialistClientController;
@@ -131,6 +132,11 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
 
 Route::middleware(['auth', 'area:operator'])->group(function (): void {
     Route::get('/operator', [PanelController::class, 'operator'])->name('operator.home');
+
+    // Today's device appointments (spec section 8.3). Only today: see TodayAppointments.
+    Route::get('/operator/today', [OperatorTodayController::class, 'index'])
+        ->middleware('can:appointment.view_today')
+        ->name('operator.today');
 });
 
 Route::middleware(['auth', 'area:specialist'])->group(function (): void {

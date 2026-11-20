@@ -19,7 +19,7 @@ class PanelController extends Controller
 
     public function operator(): View
     {
-        return $this->panel('operator');
+        return $this->panel('operator', ['todayUrl' => route('operator.today')]);
     }
 
     public function specialist(): View
@@ -27,11 +27,14 @@ class PanelController extends Controller
         return $this->panel('specialist');
     }
 
-    private function panel(string $panel): View
+    /**
+     * @param  array<string, string>  $links  Extra links for this panel's home page.
+     */
+    private function panel(string $panel, array $links = []): View
     {
         return view('panels.home', [
             'title' => __('panels.'.$panel),
             'user' => Auth::user(),
-        ]);
+        ] + $links);
     }
 }

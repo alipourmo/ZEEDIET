@@ -20,4 +20,6 @@ enum AuditAction: string
     case Export = 'export';
     case PasswordChange = 'password_change';
     case PasswordReset = 'password_reset';
+    // A device session refused because the client has a contraindication for the device (spec 7.3).
+    case SessionRefused = 'session_refused';
 }

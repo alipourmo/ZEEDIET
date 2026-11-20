@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Operator\SessionController as OperatorSessionController;
 use App\Http\Controllers\Operator\TodayController as OperatorTodayController;
 use App\Http\Controllers\PanelController;
 use App\Http\Controllers\PreviewController;
@@ -137,6 +138,17 @@ Route::middleware(['auth', 'area:operator'])->group(function (): void {
     Route::get('/operator/today', [OperatorTodayController::class, 'index'])
         ->middleware('can:appointment.view_today')
         ->name('operator.today');
+
+    // Record page and actions (spec 7.3, 8.3). The controller also checks that the appointment is open today.
+    Route::get('/operator/appointments/{appointment}/record', [OperatorSessionController::class, 'create'])
+        ->middleware('can:session.record')
+        ->name('operator.sessions.create');
+    Route::post('/operator/appointments/{appointment}/sessions', [OperatorSessionController::class, 'store'])
+        ->middleware('can:session.record')
+        ->name('operator.sessions.store');
+    Route::post('/operator/appointments/{appointment}/finish', [OperatorSessionController::class, 'finish'])
+        ->middleware('can:session.record')
+        ->name('operator.sessions.finish');
 });
 
 Route::middleware(['auth', 'area:specialist'])->group(function (): void {

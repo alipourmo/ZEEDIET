@@ -35,6 +35,8 @@
                         <x-badge :status="$appointment->currentStatus()->value">
                             {{ __('scheduling.status.'.$appointment->currentStatus()->value) }}
                         </x-badge>
+
+                        <a class="btn btn--secondary operator-button" href="{{ route('operator.sessions.create', $appointment) }}">{{ __('operator.open_record') }}</a>
                     </li>
                 @endforeach
             </ul>

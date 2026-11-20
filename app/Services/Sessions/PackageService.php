@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Sessions;
 
 use App\Enums\AuditAction;
+use App\Models\Client;
 use App\Models\SessionPackage;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
@@ -24,6 +25,10 @@ final class PackageService
     public function create(array $data, User $actor): SessionPackage
     {
         return DB::transaction(function () use ($data, $actor): SessionPackage {
+            // Lock the client first, the same order SessionRecorder uses, so a package cannot appear between a session's
+            // choice of package and its save.
+            Client::query()->whereKey($data['client_id'])->lockForUpdate()->firstOrFail();
+
             /** @var SessionPackage $package */
             $package = SessionPackage::query()->create($data + ['created_by' => $actor->getKey()]);
 

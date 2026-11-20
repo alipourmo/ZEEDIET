@@ -40,6 +40,22 @@ final class TodayAppointments
     }
 
     /**
+     * Whether the operator may open this appointment's record page or record on it: it starts today, it needs a
+     * device, the device exists, the client is not deleted, and it is not cancelled or no-show. The same rule as the
+     * list, so a link in the list always opens.
+     */
+    public static function canOpen(Appointment $appointment): bool
+    {
+        $appointment->loadMissing(['service', 'client', 'device']);
+
+        return self::isToday($appointment)
+            && $appointment->service?->requires_device === true
+            && $appointment->client !== null
+            && $appointment->device !== null
+            && $appointment->currentStatus()->holdsSlot();
+    }
+
+    /**
      * The device appointments of one day, earliest first. Clients come with the restricted medical select, so the
      * alert badges need no extra query per row, and no free text is loaded.
      *

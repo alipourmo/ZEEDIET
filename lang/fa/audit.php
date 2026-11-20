@@ -32,6 +32,7 @@ return [
         'export' => 'خروجی',
         'password_change' => 'تغییر رمز عبور',
         'password_reset' => 'بازنشانی رمز عبور',
+        'session_refused' => 'رد جلسه (منع استفاده از دستگاه)',
     ],
     'subjects' => [
         'User' => 'کاربر',

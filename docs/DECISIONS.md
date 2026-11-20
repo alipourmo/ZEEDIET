@@ -387,6 +387,19 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Fix:** both Pest steps run `set -o pipefail` first. The summary step still runs on failure (`if: always()`), so the cause shows as an annotation.
 - **Check:** a green Pest step now means Pest passed. Before trusting a green run, check the totals notice (`0 failing`).
 
+## 2026-11-17 — S3-T3: device session recording
+
+- **Refusal is audited with its own action.** `AuditAction::SessionRefused` (`session_refused`) is added, following the S1 precedent (PasswordChange and PasswordReset). The subject is the appointment. The changes hold the device id and the matched contraindication keys only, never medical text. Chosen by the user over reusing `view`.
+- **The refusal row is written outside the transaction.** A refusal throws a validation error. If the audit row were inside the transaction, the rollback would remove it. The check and the audit write therefore run before `DB::transaction`.
+- **Operators cannot override a contraindication.** This is the MVP simplification in spec 7.3. The override path for admin and specialist, the `override:{client}:{device}` setting, and the override checkbox are not built yet. Deferred, not dropped.
+- **Walk-in sessions are not built.** Spec 7.3 allows a walk-in only for admin and specialist. The operator can only record on today's appointments. Deferred.
+- **Numbering under lock.** The session takes the client's row lock, then the appointment's (the same order as the booking code). `session_number` is the highest for the client and device plus one. The unique key `(client_id, device_id, session_number)` is the backstop. A MySQL race test (`tests/Concurrency/SessionRaceTest.php`, `record-session-once.php`) checks three rounds of two simultaneous sessions.
+- **Package choice.** The oldest package of the appointment's service that still has remaining sessions, by `purchased_at` then id. `PackageService::create` now takes the same client lock, so a package cannot appear between a choice and its save.
+- **Status moves.** The first session moves an arrived appointment to in_progress. `finish` moves in_progress to completed, and from arrived it goes through in_progress first. Each move goes through `BookingService::transition`, so it is written to the history and audited.
+- **Only done sessions are recorded.** Cancelled and missed sessions are not offered on the operator page yet. The enum has them, and they do not use a package (S3-T1).
+- **Parameters.** Only `intensity`, `area` and `duration_min` are stored (spec 6.3), plus the note. Empty values are dropped. Measurements are S3-T4.
+- **Access.** The record page and its actions are in `area:operator` with `can:session.record`. The controller returns 404 unless the appointment is open today, needs a device, has a device, and is not cancelled or no-show. The same rule as the list (`TodayAppointments::canOpen`).
+
 ## 2026-11-17 — S3-T2: operator list for today
 
 - **Today is the clinic day.** `TodayAppointments::today()` is midnight in `Asia/Tehran`. The list uses the same comparison as S2 (clinic-local `Y-m-d H:i:s` against `starts_at`).

@@ -601,3 +601,4 @@ main {
 .operator-row__time { font-weight: 700; font-size: 1.125rem; min-inline-size: 4rem; }
 .operator-row__body { flex: 1; min-inline-size: 0; }
 .operator-row__name { font-weight: 700; font-size: 1.125rem; }
+.operator-button { min-height: 44px; font-size: 1.0625rem; padding-inline: 1rem; }

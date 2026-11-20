@@ -115,7 +115,8 @@ test('a session on a contraindicated device is refused, nothing is saved, and th
     expect($row)->not->toBeNull()
         ->and($row->subject_type)->toBe(Appointment::class)
         ->and((int) $row->client_id)->toBe($client->getKey())
-        ->and(json_decode((string) $row->changes, true))->toBe(['device_id' => $device->getKey(), 'keys' => ['pregnancy']]);
+        ->and(json_encode(json_decode((string) $row->changes, true), JSON_UNESCAPED_UNICODE))
+            ->toBe(json_encode(['device_id' => (int) $device->getKey(), 'keys' => ['pregnancy']], JSON_UNESCAPED_UNICODE));
 });
 
 test('an appointment that is not open for a session is refused', function (string $case) {
@@ -225,6 +226,7 @@ test('finishing an arrived appointment moves it through in progress to completed
             ->where('appointment_id', $appointment->getKey())
             ->orderBy('id')
             ->pluck('to_status')
+            ->map(fn (AppointmentStatus $status): string => $status->value)
             ->all())->toBe(['in_progress', 'completed']);
 });
 
@@ -277,7 +279,8 @@ test('the operator records a session over HTTP and the parameters are stored', f
 
     $session = DeviceSession::query()->firstOrFail();
 
-    expect($session->parameters)->toBe(['intensity' => '3', 'area' => 'شکم', 'duration_min' => 45])
+    expect(json_encode($session->parameters, JSON_UNESCAPED_UNICODE))
+        ->toBe(json_encode(['intensity' => '3', 'area' => 'شکم', 'duration_min' => 45], JSON_UNESCAPED_UNICODE))
         ->and($session->note)->toBeNull()
         ->and($session->session_number)->toBe(1);
 });

@@ -59,7 +59,7 @@ final class SessionRecorder
         if ($matched !== []) {
             // Outside the transaction below: the refusal must be kept.
             $this->audit->log(AuditAction::SessionRefused, $appointment, $clientId, [
-                'device_id' => $device->getKey(),
+                'device_id' => (int) $device->getKey(),
                 'keys' => $matched,
             ], $operator);
 
@@ -103,8 +103,8 @@ final class SessionRecorder
 
             $this->audit->log(AuditAction::Create, $session, $clientId, ['new' => [
                 'session_number' => $number,
-                'device_id' => $device->getKey(),
-                'package_id' => $package?->getKey(),
+                'device_id' => (int) $device->getKey(),
+                'package_id' => $package === null ? null : (int) $package->getKey(),
                 'status' => DeviceSessionStatus::Done->value,
             ]], $operator);
 

@@ -50,6 +50,17 @@ class MeasurementSet extends Model
     }
 
     /**
+     * The status with its enum type. Larastan reads the cast column as a string, so callers use this (see Appointment).
+     */
+    public function currentStatus(): MeasurementSetStatus
+    {
+        /** @var MeasurementSetStatus $status */
+        $status = $this->getAttribute('status');
+
+        return $status;
+    }
+
+    /**
      * The sets a client sees and the charts use: published, and not superseded (spec 7.4).
      *
      * @param  Builder<MeasurementSet>  $query

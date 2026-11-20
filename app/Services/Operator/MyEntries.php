@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Operator;
 
+use App\Enums\MeasurementSetStatus;
 use App\Models\DeviceSession;
 use App\Models\MeasurementSet;
 use App\Models\User;
@@ -67,7 +68,7 @@ final class MyEntries
                 'client' => (string) $set->client?->fullName(),
                 'kind' => __('operator.kind_measurement'),
                 'detail' => implode('، ', $parts),
-                'status' => $set->status->value === 'published'
+                'status' => $set->currentStatus() === MeasurementSetStatus::Published
                     ? __('operator.status_published')
                     : __('operator.status_pending'),
             ];

@@ -31,7 +31,7 @@ class DeviceSessionFactory extends Factory
             'device_id' => Device::factory(),
             'operator_id' => User::factory()->role(StaffRole::Operator),
             // Unique per run, so the (client, device, number) key never collides in a test.
-            'session_number' => fake()->unique()->numberBetween(1, 100000),
+            'session_number' => fake()->unique()->numberBetween(1, 60000),
             'status' => DeviceSessionStatus::Done,
             'parameters' => null,
             'note' => null,

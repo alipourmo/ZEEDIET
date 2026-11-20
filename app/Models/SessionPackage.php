@@ -85,7 +85,7 @@ class SessionPackage extends Model
     }
 
     /**
-     * @return BelongsTo<\App\Models\Service, $this>
+     * @return BelongsTo<Service, $this>
      */
     public function service(): BelongsTo
     {

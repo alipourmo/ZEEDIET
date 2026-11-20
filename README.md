@@ -6,7 +6,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 
 ## Status
 
-**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is done: S1-T1 to S1-T7 are complete (CI green on `0139170`). S2 (scheduling) is done: S2-T1 to S2-T6 are complete (CI green on `a3ec3d9`). S3 (operator, packages, measurements) is in progress: S3-T1 is complete (CI green); S3-T2 is built, waiting for CI. Sprint notes: [docs/sprints/S3.md](docs/sprints/S3.md). Sprint notes: [docs/sprints/S2.md](docs/sprints/S2.md).
+**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is done: S1-T1 to S1-T7 are complete (CI green on `0139170`). S2 (scheduling) is done: S2-T1 to S2-T6 are complete (CI green on `a3ec3d9`). S3 (operator, packages, measurements) is in progress: S3-T1 is complete (CI green); S3-T2 is complete (CI green on `3c5fda7`). Sprint notes: [docs/sprints/S3.md](docs/sprints/S3.md). Sprint notes: [docs/sprints/S2.md](docs/sprints/S2.md).
 
 | Area | State |
 |---|---|
@@ -32,7 +32,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S2-T5: calendar day, week and month in Jalali, filters | Done (CI green) |
 | S2-T6: transition actions (confirm, arrived, no-show, cancel with reason) | Done (CI green) |
 | S3-T1: session packages and device sessions schema; package pages; remaining sessions | Done (CI green) |
-| S3-T2: operator's list for today (device appointments, last 4 digits, alert flags) | Built (CI pending) |
+| S3-T2: operator's list for today (device appointments, last 4 digits, alert flags) | Done (CI green) |
 | Operator, specialist, portal, SMS | Not yet (S3–S5 and later) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

@@ -59,6 +59,40 @@
     </section>
 
     @if ($canRecord)
+        <form method="POST" action="{{ route('operator.measurements.store', $appointment) }}" class="card form" novalidate>
+            @csrf
+            <div class="card__body">
+                <h2 class="card__title">{{ __('measurements.section') }}</h2>
+
+                <div class="form__grid">
+                    @foreach ($measurementTypes as $type)
+                        @php($range = config('clinic.measurement_ranges.'.$type->unit))
+                        @php($field = 'values.'.$type->key)
+                        <div class="field">
+                            <label for="m-{{ $type->key }}">{{ __($type->label_key) }} ({{ $type->unit }})</label>
+                            <input id="m-{{ $type->key }}" name="values[{{ $type->key }}]" type="text" inputmode="decimal"
+                                   value="{{ old($field) }}" @error($field) aria-invalid="true" @enderror>
+                            <p class="muted">{{ __('measurements.hint', [
+                                'min' => \App\Support\Digits::toPersian($range['min'] ?? 0),
+                                'max' => \App\Support\Digits::toPersian($range['max'] ?? 0),
+                                'unit' => $type->unit,
+                            ]) }}</p>
+                            @error($field)<p class="field__error">{{ $message }}</p>@enderror
+                        </div>
+                    @endforeach
+
+                    <div class="field field--wide">
+                        <label for="measurement-note">{{ __('measurements.note') }}</label>
+                        <textarea id="measurement-note" name="note" rows="2" maxlength="500">{{ old('note') }}</textarea>
+                    </div>
+                </div>
+
+                <p class="form__actions">
+                    <button type="submit" class="btn btn--primary operator-button">{{ __('measurements.record') }}</button>
+                </p>
+            </div>
+        </form>
+
         <form method="POST" action="{{ route('operator.sessions.store', $appointment) }}" class="card form" novalidate>
             @csrf
             <div class="card__body">

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             StaffSeeder::class,
             CatalogSeeder::class,
             ScheduleSeeder::class,
+            MeasurementTypeSeeder::class,
         ]);
     }
 }

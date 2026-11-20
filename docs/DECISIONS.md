@@ -387,6 +387,17 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Fix:** both Pest steps run `set -o pipefail` first. The summary step still runs on failure (`if: always()`), so the cause shows as an annotation.
 - **Check:** a green Pest step now means Pest passed. Before trusting a green run, check the totals notice (`0 failing`).
 
+## 2026-11-17 — S3-T4: measurement form (operator)
+
+- **Schema from spec 6.4.** `measurement_types` (seeded, idempotent: `firstOrCreate` by key, so an admin's changes survive a re-seed), `measurement_sets` (client, date, recorder, status, reviewer, publish time, supersedes, superseded, note) and `measurements` (decimal(6,2), unique per set and type). Sets cannot be deleted in the model.
+- **Ranges by unit** in `config('clinic.measurement_ranges')`: kg 20–400, cm 10–300, % 1–70 (spec 7.4). Out of range is rejected, never clamped, and nothing is saved (the whole set is refused). The range check is by unit, so muscle mass uses the kg range.
+- **Precision.** At most four digits before the point and two after. Persian digits and Persian or comma decimal separators are accepted.
+- **Operator form.** Weight and the seven circumferences only (spec 8.3). Body fat and muscle mass are for the specialist, and any other key posted is ignored.
+- **Status.** The operator's set is `pending_review`. The specialist's review and publish are not built yet (S4).
+- **Override.** Spec 7.4 lets an admin override a range error. It is not built, so there is no override path. Deferred.
+- **Audit.** One create row per set, with the type keys and never the values.
+- **Access.** `measurement.record` (operator, admin, specialist per spec 5); the operator's route is in `area:operator`, so only operators can reach it from the panel.
+
 ## 2026-11-17 — S3-T3: device session recording
 
 - **Refusal is audited with its own action.** `AuditAction::SessionRefused` (`session_refused`) is added, following the S1 precedent (PasswordChange and PasswordReset). The subject is the appointment. The changes hold the device id and the matched contraindication keys only, never medical text. Chosen by the user over reusing `view`.

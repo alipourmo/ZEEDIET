@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Operator\MeasurementController as OperatorMeasurementController;
 use App\Http\Controllers\Operator\SessionController as OperatorSessionController;
 use App\Http\Controllers\Operator\TodayController as OperatorTodayController;
 use App\Http\Controllers\PanelController;
@@ -149,6 +150,9 @@ Route::middleware(['auth', 'area:operator'])->group(function (): void {
     Route::post('/operator/appointments/{appointment}/finish', [OperatorSessionController::class, 'finish'])
         ->middleware('can:session.record')
         ->name('operator.sessions.finish');
+    Route::post('/operator/appointments/{appointment}/measurements', [OperatorMeasurementController::class, 'store'])
+        ->middleware('can:measurement.record')
+        ->name('operator.measurements.store');
 });
 
 Route::middleware(['auth', 'area:specialist'])->group(function (): void {

@@ -38,6 +38,14 @@ return [
     ],
 
     // Keys used in client_medical.device_contraindications and devices.contraindications.
+    // Accepted range for a measurement value, by unit (spec section 7.4). A value outside the range is rejected, never
+    // clamped. Units match measurement_types.unit.
+    'measurement_ranges' => [
+        'kg' => ['min' => 20, 'max' => 400],
+        'cm' => ['min' => 10, 'max' => 300],
+        '%' => ['min' => 1, 'max' => 70],
+    ],
+
     'contraindication_keys' => [
         'pregnancy',
         'pacemaker',

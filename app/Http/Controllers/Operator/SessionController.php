@@ -10,6 +10,7 @@ use App\Models\Appointment;
 use App\Models\DeviceSession;
 use App\Models\SessionPackage;
 use App\Models\User;
+use App\Services\Measurements\MeasurementRecorder;
 use App\Services\Operator\TodayAppointments;
 use App\Services\Sessions\SessionRecorder;
 use App\Support\ClientAlertBadges;
@@ -25,7 +26,10 @@ use Illuminate\View\View;
  */
 class SessionController extends Controller
 {
-    public function __construct(private readonly SessionRecorder $recorder) {}
+    public function __construct(
+        private readonly SessionRecorder $recorder,
+        private readonly MeasurementRecorder $measurements,
+    ) {}
 
     public function create(Request $request, Appointment $appointment): View
     {
@@ -49,6 +53,7 @@ class SessionController extends Controller
             'nextPackageId' => $packages->first(fn (SessionPackage $package): bool => $package->remainingSessions() > 0)?->getKey(),
             'sessions' => $sessions,
             'canRecord' => in_array($appointment->currentStatus()->value, ['arrived', 'in_progress'], true),
+            'measurementTypes' => $this->measurements->operatorTypes(),
         ]);
     }
 

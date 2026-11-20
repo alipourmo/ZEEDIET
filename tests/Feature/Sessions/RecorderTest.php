@@ -66,6 +66,24 @@ function recMedical(Client $client, array $attributes): void
     $client->medical?->update($attributes);
 }
 
+/**
+ * 'same' when the two arrays match, ignoring key order (MySQL JSON columns do not keep it). Otherwise the text says
+ * what differed, so a failing CI annotation shows the values.
+ *
+ * @param  array<array-key, mixed>  $actual
+ * @param  array<array-key, mixed>  $expected
+ */
+function recDiff(array $actual, array $expected): string
+{
+    ksort($actual);
+    ksort($expected);
+
+    $actualJson = (string) json_encode($actual, JSON_UNESCAPED_UNICODE);
+    $expectedJson = (string) json_encode($expected, JSON_UNESCAPED_UNICODE);
+
+    return $actualJson === $expectedJson ? 'same' : 'differs: '.$actualJson.' expected '.$expectedJson;
+}
+
 // Service level ----------------------------------------------------------------------------------------------------
 
 test('sessions are numbered per client and device', function () {
@@ -115,8 +133,8 @@ test('a session on a contraindicated device is refused, nothing is saved, and th
     expect($row)->not->toBeNull()
         ->and($row->subject_type)->toBe(Appointment::class)
         ->and((int) $row->client_id)->toBe($client->getKey())
-        ->and(json_encode(json_decode((string) $row->changes, true), JSON_UNESCAPED_UNICODE))
-            ->toBe(json_encode(['device_id' => (int) $device->getKey(), 'keys' => ['pregnancy']], JSON_UNESCAPED_UNICODE));
+        ->and(recDiff((array) json_decode((string) $row->changes, true), ['device_id' => (int) $device->getKey(), 'keys' => ['pregnancy']]))
+            ->toBe('same');
 });
 
 test('an appointment that is not open for a session is refused', function (string $case) {
@@ -279,8 +297,8 @@ test('the operator records a session over HTTP and the parameters are stored', f
 
     $session = DeviceSession::query()->firstOrFail();
 
-    expect(json_encode($session->parameters, JSON_UNESCAPED_UNICODE))
-        ->toBe(json_encode(['intensity' => '3', 'area' => 'شکم', 'duration_min' => 45], JSON_UNESCAPED_UNICODE))
+    expect(recDiff((array) $session->parameters, ['intensity' => '3', 'area' => 'شکم', 'duration_min' => 45]))->toBe('same');
+    expect($session->parameters)->toBeArray()
         ->and($session->note)->toBeNull()
         ->and($session->session_number)->toBe(1);
 });

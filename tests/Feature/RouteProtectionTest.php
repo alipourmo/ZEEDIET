@@ -21,6 +21,35 @@ const PUBLIC_ROUTE_URIS = [
     'my-account/verify',
 ];
 
+// The portal URIs are public only as far as sign-in goes. Everything else under my-account needs the 'portal' guard.
+const PORTAL_PUBLIC_URIS = ['my-account/login', 'my-account/verify'];
+
+test('the portal pages that need sign-in are behind the portal middleware', function () {
+    foreach (Route::getRoutes() as $route) {
+        $uri = $route->uri();
+
+        if (! str_starts_with($uri, 'my-account') || in_array($uri, PORTAL_PUBLIC_URIS, true)) {
+            continue;
+        }
+
+        expect($route->middleware())->toContain('portal', 'portal route not behind portal middleware: '.$uri);
+    }
+});
+
+test('every protected route also answers a guest with a redirect, never a page', function () {
+    foreach (Route::getRoutes() as $route) {
+        $uri = $route->uri();
+
+        if (in_array($uri, PUBLIC_ROUTE_URIS, true) || ! in_array('GET', $route->methods(), true) || str_contains($uri, '{')) {
+            continue;
+        }
+
+        $response = $this->get('/'.$uri);
+
+        expect($response->getStatusCode())->toBeIn([302, 403, 404], 'guest reached /'.$uri);
+    }
+});
+
 test('every route is public by allowlist or protected by auth or an area middleware', function () {
     $unprotected = [];
 

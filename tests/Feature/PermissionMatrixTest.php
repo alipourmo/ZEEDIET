@@ -88,3 +88,37 @@ test('a guest has no permissions', function () {
     expect(Gate::forUser(null)->allows('client.view'))->toBeFalse();
     expect(Gate::forUser(null)->allows('area.admin'))->toBeFalse();
 });
+
+/**
+ * Spec section 10.5: one line per page a role must not reach. A role that has no grant for a page gets 403 (an area
+ * the role may not enter) or 404 (a record it may not see), and never a 200. The page URL is built with a real record
+ * where a parameter is needed.
+ *
+ * @return array<string, array{0: string, 1: string, 2: string}>
+ */
+function forbiddenPages(): array
+{
+    return [
+        'secretary cannot open the specialist panel' => ['secretary', 'specialist.home', 'GET'],
+        'secretary cannot open the operator panel' => ['secretary', 'operator.home', 'GET'],
+        'secretary cannot open the daily report' => ['secretary', 'admin.reports.daily', 'GET'],
+        'secretary cannot open the audit log' => ['secretary', 'admin.audit.index', 'GET'],
+        'secretary cannot manage users' => ['secretary', 'admin.users.index', 'GET'],
+        'operator cannot open the admin panel' => ['operator', 'admin.home', 'GET'],
+        'operator cannot list clients' => ['operator', 'admin.clients.index', 'GET'],
+        'operator cannot open the payment ledger' => ['operator', 'admin.payments.index', 'GET'],
+        'specialist cannot open the admin panel' => ['specialist', 'admin.home', 'GET'],
+        'specialist cannot open the operator panel' => ['specialist', 'operator.home', 'GET'],
+        'specialist cannot open the audit log' => ['specialist', 'admin.audit.index', 'GET'],
+        'specialist cannot open payments' => ['specialist', 'admin.payments.index', 'GET'],
+        'specialist cannot edit SMS templates' => ['specialist', 'admin.sms.templates', 'GET'],
+    ];
+}
+
+test('a role without the grant is refused the page (403 or 404), never shown it', function (string $role, string $route, string $method) {
+    $user = User::factory()->role(StaffRole::from($role))->create(['is_active' => true, 'must_change_password' => false]);
+
+    $response = $this->actingAs($user)->call($method, route($route));
+
+    expect($response->getStatusCode())->toBeIn([403, 404], "{$role} reached {$route}");
+})->with(forbiddenPages());

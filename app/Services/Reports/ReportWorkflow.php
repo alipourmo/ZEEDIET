@@ -30,6 +30,16 @@ final class ReportWorkflow
     ) {}
 
     /**
+     * Opening a set for review reads medical measurements, so the view is audited (spec 7.8). Checks measurement.review.
+     */
+    public function view(MeasurementSet $set, User $reviewer): void
+    {
+        $this->authorize($reviewer);
+
+        $this->audit->log(AuditAction::View, $set, (int) $set->client_id, null, $reviewer);
+    }
+
+    /**
      * Publishes a pending set. If it corrects an older set, the older set gets superseded_at in the same transaction.
      */
     public function publish(MeasurementSet $set, User $reviewer): MeasurementSet

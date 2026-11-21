@@ -450,3 +450,14 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Return to operator.** The set stays pending and the comment is stored in `measurement_sets.note` (spec 8.4). This replaces the operator's note. The comment is required and is not written to the audit log, since it may name medical detail. The audit row records that the set was returned.
 - **Specialist edit before publish.** `MeasurementRecorder::replaceValues()` changes values of a pending set only. It uses the same range and precision checks as recording.
 - **Open:** whether the operator's note should be kept separately from the specialist's return comment. The spec puts the comment in `note`, so this build follows it.
+
+## 2026-11-17 — S4-T2: specialist inbox and review page
+
+- **Routes.** `specialist.reviews.index`, `.show`, `.update` (PUT), `.publish` (POST) and `.return` (POST). All sit in `area:specialist` and `can:measurement.review`. The secretary and the operator get 403 on each one (tested).
+- **Inbox.** Pending sets only, oldest first (`created_at`, then id). Shows client name, measured date and the recorder's name. No phone, no medical text.
+- **Review page.** Pending sets only; a published set returns 404. Opening the page is audited as a `view` of the set, because it reads medical measurements (spec 7.8).
+- **Previous values.** A correction compares with the set it supersedes. Any other set compares with the client's latest current published set (`MeasurementSet::current()`), never another client's. The table shows previous, this report, and the change (current minus previous, signed, two decimals).
+- **Edit before publish.** The form lists every active type, so the specialist can record body fat and muscle mass as well as the operator's types. A blank field removes that value. The same range rules apply (spec 7.4).
+- **Return.** The comment is required (max 500). The set stays pending and the comment replaces `note` (see S4-T1).
+- **Corrections on the page.** Not in this task. The correction form goes on the client file in S4-T4, so this page only handles pending sets.
+- **Panel link.** The specialist home links to the inbox.

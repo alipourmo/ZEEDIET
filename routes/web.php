@@ -23,6 +23,7 @@ use App\Http\Controllers\PanelController;
 use App\Http\Controllers\PreviewController;
 use App\Http\Controllers\Specialist\ClientController as SpecialistClientController;
 use App\Http\Controllers\Specialist\ClientMedicalController as SpecialistClientMedicalController;
+use App\Http\Controllers\Specialist\ReviewController as SpecialistReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PreviewController::class, 'home'])->name('preview.home');
@@ -169,5 +170,14 @@ Route::middleware(['auth', 'area:specialist'])->group(function (): void {
         Route::get('/{client}', [SpecialistClientController::class, 'show'])->middleware('can:client.view')->name('show');
         Route::get('/{client}/medical', [SpecialistClientMedicalController::class, 'edit'])->middleware('can:medical.view')->name('medical.edit');
         Route::put('/{client}/medical', [SpecialistClientMedicalController::class, 'update'])->middleware('can:medical.update')->name('medical.update');
+    });
+
+    // Review inbox and review page (spec section 8.4). Pending sets only; the workflow checks measurement.review again.
+    Route::prefix('specialist/reviews')->name('specialist.reviews.')->middleware('can:measurement.review')->group(function (): void {
+        Route::get('/', [SpecialistReviewController::class, 'index'])->name('index');
+        Route::get('/{set}', [SpecialistReviewController::class, 'show'])->name('show');
+        Route::put('/{set}', [SpecialistReviewController::class, 'update'])->name('update');
+        Route::post('/{set}/publish', [SpecialistReviewController::class, 'publish'])->name('publish');
+        Route::post('/{set}/return', [SpecialistReviewController::class, 'returnToOperator'])->name('return');
     });
 });

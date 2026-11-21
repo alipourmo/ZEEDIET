@@ -27,7 +27,9 @@ class PanelController extends Controller
 
     public function specialist(): View
     {
-        return $this->panel('specialist');
+        return $this->panel('specialist', [
+            'reviewsUrl' => route('specialist.reviews.index'),
+        ]);
     }
 
     /**

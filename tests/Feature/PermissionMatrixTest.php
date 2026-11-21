@@ -21,7 +21,7 @@ function specPermissionMatrix(): array
             'appointment.view_all', 'appointment.view_today', 'appointment.manage',
             'session.record', 'session.view',
             'measurement.record', 'measurement.review', 'measurement.view',
-            'note.manage', 'payment.view', 'payment.record', 'package.manage',
+            'note.manage', 'payment.view', 'payment.record', 'payment.reverse', 'package.manage',
             'report.admin', 'audit.view', 'user.manage', 'settings.manage', 'catalog.manage',
             'sms.log.view', 'sms.templates.manage',
             'area.admin',

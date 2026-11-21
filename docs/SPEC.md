@@ -107,7 +107,7 @@ Conventions:
 
 ## 5. Roles and Permissions
 
-Permission keys (use as Gate names): client.view, client.create, client.update, client.delete, medical.view, medical.update, medical.view_alerts, appointment.view_all, appointment.view_today, appointment.view_own, appointment.manage, session.record, session.view, measurement.record, measurement.review, measurement.view, note.manage, payment.view, payment.record, package.manage, report.admin, audit.view, user.manage, catalog.manage (services, devices, rooms, schedules, holidays), sms.templates.manage, sms.log.view, settings.manage.
+Permission keys (use as Gate names): client.view, client.create, client.update, client.delete, medical.view, medical.update, medical.view_alerts, appointment.view_all, appointment.view_today, appointment.view_own, appointment.manage, session.record, session.view, measurement.record, measurement.review, measurement.view, note.manage, payment.view, payment.record, payment.reverse, package.manage, report.admin, audit.view, user.manage, catalog.manage (services, devices, rooms, schedules, holidays), sms.templates.manage, sms.log.view, settings.manage.
 
 | Permission | admin | secretary | operator | specialist |
 |---|---|---|---|---|
@@ -126,6 +126,7 @@ Permission keys (use as Gate names): client.view, client.create, client.update, 
 | measurement.view (all states) | ✓ | – | ✓ (own entries) | ✓ |
 | note.manage | ✓ | – | – | ✓ |
 | payment.view / record | ✓ | ✓ | – | – |
+| payment.reverse (reversing entry, S4-T5) | ✓ | – | – | – |
 | package.manage | ✓ | ✓ | – | – |
 | report.admin, audit.view, user.manage, settings.manage | ✓ | – | – | – |
 | catalog.manage | ✓ | – | – | – |

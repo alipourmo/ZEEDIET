@@ -498,3 +498,4 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Audit.** Recording and reversing both write `Create`. The audit holds the amount and method, or the amount and `reverses_id`. It never holds the reference, the note or the reversal reason.
 - **Not in this task.** A balance against a package price. Invoices (V1.5). The client portal's payment history (V1.0).
 - **Routes.** `admin.payments.index` (`payment.view`), `.create` and `.store` (`payment.record`), `.reverse.form` and `.reverse` (`payment.reverse`). All behind `area:admin`. The admin client file has a ledger link.
+- **Spec 5 updated for `payment.reverse`.** The §5 grant table and key list gain `payment.reverse` (admin only). `PermissionMatrixTest` lists the same grant, so a config change without a spec change still fails it.

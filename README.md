@@ -50,6 +50,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S5-T6: performance pass (2,000 clients, 20,000 appointments, list pages under 300 ms) and `starts_at` index | Done (CI green on `a2d44ce`) |
 | S5-T7: `docs/RELEASE.md` (migrations, env, Supervisor, cron, SSL, backups, rollback) and `docs/user-guide-fa.md` | Done |
 | MVP gate 7 and 8: backup and restore test on seeded MySQL 8, and fresh install from README to sign-in (both in CI) | Done in CI (run `44876194248`). Manual check on the production host and a timed run on a clinic computer still to do. |
+| 375 px and 1280 px layout check (RTL, overflow, font) on the public sign-in pages | Automated in CI (run `44876837597`). Screenshots to be reviewed by a person. Portal and admin pages not yet covered. |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).
 

@@ -119,19 +119,28 @@ test('an empty follow-up date is allowed and clears the next follow-up', functio
         ->assertSee(__('followups.none_set'));
 });
 
-test('secretary, operator and admin cannot add a note, and the service refuses too', function (StaffRole $role) {
+test('secretary, operator and admin cannot post a note through the panel', function (StaffRole $role) {
     $client = makeClient();
-    $user = cfUser($role);
 
-    $this->actingAs($user)
+    // Admin holds note.manage (spec 5), but the panel is area:specialist, so the route is closed to admin too.
+    $this->actingAs(cfUser($role))
         ->post(route('specialist.notes.store', $client), ['body' => 'نفوذ'])
         ->assertForbidden();
 
-    expect(fn () => app(SpecialistNotes::class)->add($client, $user, 'نفوذ', null))
+    expect(SpecialistNote::query()->count())->toBe(0);
+})->with([
+    'admin' => StaffRole::Admin,
+    'secretary' => StaffRole::Secretary,
+    'operator' => StaffRole::Operator,
+]);
+
+test('the service refuses a note from a user without note.manage', function (StaffRole $role) {
+    $client = makeClient();
+
+    expect(fn () => app(SpecialistNotes::class)->add($client, cfUser($role), 'نفوذ', null))
         ->toThrow(AuthorizationException::class)
         ->and(SpecialistNote::query()->count())->toBe(0);
 })->with([
-    'admin' => StaffRole::Admin,
     'secretary' => StaffRole::Secretary,
     'operator' => StaffRole::Operator,
 ]);

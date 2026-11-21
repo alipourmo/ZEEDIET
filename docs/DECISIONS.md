@@ -478,7 +478,7 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 
 ## 2026-11-21 — S4-T4: specialist client file, notes and follow-ups
 
-- **Notes are append-only.** `specialist_notes` (spec 6.5) rows cannot be updated or deleted (the model throws). A correction is a new note. Notes are written only by `note.manage` (specialist; admin and secretary cannot reach the panel and the service refuses too).
+- **Notes are append-only.** `specialist_notes` (spec 6.5) rows cannot be updated or deleted (the model throws). A correction is a new note. `note.manage` is held by admin and specialist (spec 5). The panel is `area:specialist`, so admin cannot reach the note route; the service checks `note.manage` too, so secretary and operator are refused there. The follow-up is stored as a Y-m-d date so the due query compares the same on SQLite and MySQL (S2 had the same issue).
 - **The next follow-up is the latest note's date.** A client's follow-up is the `next_follow_up_on` of its most recent note, even if that is empty. The note form is pre-filled with the current follow-up, so adding a note keeps it. Clearing the date on a new note removes the follow-up. Dates are typed in Jalali and stored as Gregorian.
 - **Follow-ups due.** `specialist.followups` lists, for each client, the latest note when its date is within seven days or already past (overdue is marked). Soft-deleted clients are left out. Oldest date first. Only names and dates are shown, so the list is not audited, like the operator's list.
 - **Audit.** Adding a note writes a `create` row with the follow-up date only, never the text. Opening the client file writes one `view` row for the client with `sections: [notes, measurements]`. Each page load is audited, as the medical read already is.

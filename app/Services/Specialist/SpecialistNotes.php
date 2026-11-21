@@ -38,7 +38,8 @@ final class SpecialistNotes
             'client_id' => $client->getKey(),
             'specialist_id' => $actor->getKey(),
             'body' => $body,
-            'next_follow_up_on' => $followUpOn,
+            // A calendar date, written as Y-m-d so the column compares the same way on every database.
+            'next_follow_up_on' => $followUpOn?->toDateString(),
         ]);
 
         $this->audit->log(AuditAction::Create, $note, (int) $client->getKey(), [
@@ -67,7 +68,7 @@ final class SpecialistNotes
         return SpecialistNote::query()
             ->whereIn('id', $latestPerClient)
             ->whereNotNull('next_follow_up_on')
-            ->where('next_follow_up_on', '<=', $today->addDays(self::FOLLOW_UP_WINDOW_DAYS)->toDateString())
+            ->whereDate('next_follow_up_on', '<=', $today->addDays(self::FOLLOW_UP_WINDOW_DAYS)->toDateString())
             ->whereHas('client')
             ->with(['client', 'specialist'])
             ->orderBy('next_follow_up_on')

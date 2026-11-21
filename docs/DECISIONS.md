@@ -524,4 +524,5 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **report_ready.** `ReportPublished` now has a listener (`QueueReportReadySms`). The text holds the client's first name and the clinic name, never a measurement.
 - **Masking.** `Mobile::mask` is added to the existing `App\Support\Mobile` class (its `normalize` is unchanged). The SMS log shows the last four digits only.
 - **Not in this task.** The OTP send (T3), the welcome SMS on client creation (optional in spec 9, not wired), the portal's «send portal info» option (spec 8.2), and the SMS sender setting on the settings page (spec 8.2).
+- **CI.** Green on `f63751c` (600 run, 0 failing). Two fixes on the way: `SmsLog::currentStatus()` returns the enum, because Larastan reads the cast column as a string (as `Appointment` does); and the reminder test had an overlapping booking on the one device.
 - **Routes.** `admin.sms.templates`, `.edit`, `.update` and `admin.sms.log.resend` (`sms.templates.manage`). `admin.sms.log` (`sms.log.view`). All inside the `area:admin` group (the secretary can enter that area).

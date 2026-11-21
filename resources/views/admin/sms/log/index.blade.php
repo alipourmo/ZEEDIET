@@ -5,8 +5,6 @@
 @section('content')
     <h1 class="page-title">{{ __('sms.log.title') }}</h1>
 
-    <x-flash />
-
     @if ($errors->any())
         <div class="card__body" role="alert">
             <ul class="field__error">

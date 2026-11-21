@@ -25,6 +25,9 @@ use App\Http\Controllers\Operator\MeasurementController as OperatorMeasurementCo
 use App\Http\Controllers\Operator\SessionController as OperatorSessionController;
 use App\Http\Controllers\Operator\TodayController as OperatorTodayController;
 use App\Http\Controllers\PanelController;
+use App\Http\Controllers\Portal\PortalAuthController;
+use App\Http\Controllers\Portal\PortalController;
+use App\Http\Controllers\Portal\PortalReportController;
 use App\Http\Controllers\PreviewController;
 use App\Http\Controllers\Specialist\ClientController as SpecialistClientController;
 use App\Http\Controllers\Specialist\ClientMedicalController as SpecialistClientMedicalController;
@@ -228,3 +231,24 @@ Route::middleware(['auth', 'area:specialist'])->group(function (): void {
         Route::post('/{set}/return', [SpecialistReviewController::class, 'returnToOperator'])->name('return');
     });
 });
+
+// Client portal (spec 7.5 and 8.5). Sign-in is public. Everything else needs a signed-in client on the client guard,
+// through the 'portal' middleware. A staff session does not open these pages.
+Route::prefix('my-account')->name('portal.')->group(function (): void {
+    Route::get('login', [PortalAuthController::class, 'create'])->name('login');
+    Route::post('login', [PortalAuthController::class, 'store'])->name('login.store');
+    Route::get('verify', [PortalAuthController::class, 'verifyForm'])->name('verify');
+    Route::post('verify', [PortalAuthController::class, 'verify'])->name('verify.store');
+
+    Route::middleware('portal')->group(function (): void {
+        Route::get('/', [PortalController::class, 'home'])->name('home');
+        Route::get('progress', [PortalController::class, 'progress'])->name('progress');
+        Route::get('reports', [PortalReportController::class, 'index'])->name('reports');
+        Route::get('reports/{set}', [PortalReportController::class, 'show'])->whereNumber('set')->name('reports.show');
+        Route::get('appointments', [PortalController::class, 'appointments'])->name('appointments');
+        Route::get('sessions', [PortalController::class, 'sessions'])->name('sessions');
+        Route::get('payments', [PortalController::class, 'payments'])->name('payments');
+        Route::post('logout', [PortalAuthController::class, 'destroy'])->name('logout');
+    });
+});
+

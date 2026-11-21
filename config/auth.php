@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Client;
 use App\Models\User;
 
 return [
@@ -42,6 +43,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        // Client portal (spec 7.5): OTP login, session guard, separate from the staff guard.
+        'client' => [
+            'driver' => 'session',
+            'provider' => 'clients',
+        ],
     ],
 
     /*
@@ -71,6 +77,10 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+        'clients' => [
+            'driver' => 'eloquent',
+            'model' => Client::class,
+        ],
     ],
 
     /*

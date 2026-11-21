@@ -76,4 +76,17 @@ return [
         'login_rate_limit_per_minute' => 5,
     ],
 
+    // Client portal (spec 7.5). Codes are 5 digits, valid for 3 minutes, and a code takes at most 5 wrong tries.
+    // Requests: 3 per mobile per 10 minutes and 10 per IP per hour. A signed-in client's session lasts up to 30 days
+    // from sign-in and ends after 24 hours without a request.
+    'portal' => [
+        'otp_ttl_minutes' => 3,
+        'otp_max_wrong_attempts' => 5,
+        'otp_mobile_requests' => 3,
+        'otp_mobile_decay_minutes' => 10,
+        'otp_ip_requests' => 10,
+        'otp_ip_decay_minutes' => 60,
+        'session_absolute_days' => 30,
+        'session_idle_hours' => 24,
+    ],
 ];

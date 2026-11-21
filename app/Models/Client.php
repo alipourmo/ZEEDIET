@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\ClientStatus;
 use App\Enums\Gender;
 use App\Enums\PregnancyStatus;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,10 +20,12 @@ use LogicException;
 /**
  * A client (spec section 6.1). Soft delete only: forceDelete() is refused.
  */
-class Client extends Model
+class Client extends Model implements AuthenticatableContract
 {
     /** @use HasFactory<ClientFactory> */
-    use HasFactory, SoftDeletes;
+    use Authenticatable, HasFactory, SoftDeletes;
+
+    // A client signs in to the portal with a one-time code (spec 7.5), so there is no password to check.
 
     /** @var list<string> */
     protected $fillable = [

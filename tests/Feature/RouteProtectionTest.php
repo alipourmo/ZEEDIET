@@ -17,6 +17,8 @@ const PUBLIC_ROUTE_URIS = [
     'up',
     'login',
     'logout',
+    'my-account/login',
+    'my-account/verify',
 ];
 
 test('every route is public by allowlist or protected by auth or an area middleware', function () {
@@ -32,7 +34,7 @@ test('every route is public by allowlist or protected by auth or an area middlew
         // The middleware as declared on the route (aliases such as 'auth' and 'area:admin'), not the resolved classes.
         $middleware = $route->middleware();
         $protected = in_array('auth', $middleware, true)
-            || collect($middleware)->contains(fn (string $name): bool => str_starts_with($name, 'area:') || str_starts_with($name, 'can:'));
+            || collect($middleware)->contains(fn (string $name): bool => str_starts_with($name, 'area:') || str_starts_with($name, 'can:') || $name === 'portal');
 
         if (! $protected) {
             $unprotected[] = implode('|', $route->methods()).' '.$uri;

@@ -44,10 +44,11 @@ class SmsTemplateController extends Controller
     public function update(UpdateSmsTemplateRequest $request, SmsTemplate $template): RedirectResponse
     {
         $old = ['body' => $template->body, 'is_active' => (bool) $template->is_active];
+        $key = SmsTemplateKey::tryFrom($template->key);
 
         $template->forceFill([
             'body' => (string) $request->input('body'),
-            'is_active' => (bool) $request->input('is_active'),
+            'is_active' => $key?->isAlwaysOn() === true ? true : (bool) $request->input('is_active'),
         ])->save();
 
         $this->audit->log(AuditAction::Update, $template, null, [

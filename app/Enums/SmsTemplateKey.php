@@ -38,6 +38,12 @@ enum SmsTemplateKey: string
         return __('sms.keys.'.$this->value);
     }
 
+    /** The OTP is always sent, so its template cannot be switched off (otherwise nobody can sign in). */
+    public function isAlwaysOn(): bool
+    {
+        return $this === self::Otp;
+    }
+
     /** Marketing-type messages wait for the quiet hours to end (spec section 9). Reminders and OTP do not. */
     public function isMarketing(): bool
     {

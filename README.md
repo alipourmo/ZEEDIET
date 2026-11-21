@@ -43,8 +43,10 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S4-T5: payments (record, list with Jalali date filter, client ledger, admin-only reversal; no edit or delete) | Done (CI green on `9a57227`) |
 | S4-T6: admin dashboard cards and daily report (admin only) | Done (CI green on `c8c3807`) |
 | S5-T1: SMS gateway (Kavenegar, log), dispatcher with retries, templates, sms_log with resend, appointment events, reminder command | Done (CI green on `f63751c`) |
-| S5-T2 to S5-T7: OTP login, client portal, hardening, performance, release checklist | Not yet |
-| Client portal and OTP | Not yet (S5) |
+| S5-T2: event wiring (report_ready, appointment events) and reminder scheduler | Done with S5-T1 (CI green on `f63751c`) |
+| S5-T3: client OTP login (5-digit code, 3-minute expiry, rate limits, client guard) | Built, CI pending |
+| S5-T4: client portal (five tiles, reports, appointments read-only, sessions, payments; `ClientOwnedScope`) | Built, CI pending |
+| S5-T5 to S5-T7: hardening, performance, release checklist | Not yet |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).
 

@@ -35,7 +35,7 @@ final class SmsDispatcher
 
         $template = SmsTemplate::query()->where('key', $key->value)->first();
 
-        if ($template !== null && ! $template->is_active) {
+        if ($template !== null && ! $template->is_active && ! $key->isAlwaysOn()) {
             return null;
         }
 

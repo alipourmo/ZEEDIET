@@ -6,6 +6,7 @@ namespace App\Services\Audit;
 
 use App\Enums\AuditAction;
 use App\Models\AuditLog;
+use App\Models\Client;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -37,12 +38,44 @@ final class AuditLogger
     ): AuditLog {
         $signedIn = Auth::user();
         $actor ??= $signedIn instanceof User ? $signedIn : null;
+
+        return $this->write(
+            $action,
+            $subject,
+            $clientId,
+            $changes,
+            $actor instanceof User ? 'user' : 'system',
+            $actor?->getKey(),
+        );
+    }
+
+    /**
+     * An action taken by a client in the portal (spec 7.8: login and logout of clients). The actor is the client.
+     *
+     * @param  array<string, mixed>|null  $changes
+     */
+    public function logAsClient(AuditAction $action, Model $subject, Client $client, ?array $changes = null): AuditLog
+    {
+        return $this->write($action, $subject, (int) $client->getKey(), $changes, 'client', (int) $client->getKey());
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $changes
+     */
+    private function write(
+        AuditAction $action,
+        Model $subject,
+        ?int $clientId,
+        ?array $changes,
+        string $actorType,
+        int|string|null $actorId,
+    ): AuditLog {
         $request = request();
 
         /** @var AuditLog $log */
         $log = AuditLog::create([
-            'actor_type' => $actor instanceof User ? 'user' : 'system',
-            'actor_id' => $actor?->getKey(),
+            'actor_type' => $actorType,
+            'actor_id' => $actorId,
             'action' => $action->value,
             'subject_type' => $subject::class,
             'subject_id' => $subject->getKey(),

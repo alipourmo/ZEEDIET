@@ -33,7 +33,8 @@
 
             <div class="field field--wide">
                 <label class="check">
-                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $template->is_active))>
+                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $template->is_active))
+                           @disabled(\App\Enums\SmsTemplateKey::tryFrom($template->key)?->isAlwaysOn() === true)>
                     {{ __('sms.templates.active') }}
                 </label>
             </div>

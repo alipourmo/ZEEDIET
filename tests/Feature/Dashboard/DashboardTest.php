@@ -118,10 +118,12 @@ test('the day payments are the net per method: a reversal the same day cancels t
 
     $today = CarbonImmutable::now('Asia/Tehran');
 
-    expect($stats->paymentsOn($today))->toMatchArray([
-        'total' => 200000,
-        'byMethod' => ['cash' => 200000, 'card' => 0],
-    ]);
+    $net = $stats->paymentsOn($today);
+
+    expect($net['total'])->toBe(200000)
+        ->and($net['byMethod']['cash'])->toBe(200000)
+        ->and($net['byMethod']['card'])->toBe(0)
+        ->and(array_keys($net['byMethod']))->toBe(array_column(PaymentMethod::cases(), 'value'));
 });
 
 test('the dashboard shows the operational cards to secretary and the admin cards to admin only', function () {

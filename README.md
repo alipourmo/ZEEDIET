@@ -64,10 +64,14 @@ Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred w
 cp .env.example .env
 composer install
 php artisan key:generate
+touch database/database.sqlite
+php artisan migrate --seed
 php artisan serve
 ```
 
-Open `http://127.0.0.1:8000`. In `local` environment the style guide is at `/_styleguide`.
+`migrate --seed` creates the tables and the staff accounts, and prints one temporary password per account (shown once). The admin account's mobile is `09000000001`. Open `http://127.0.0.1:8000/login`, sign in with that mobile and the printed password, and choose a new password when asked. The other seeded accounts are `09000000002` (secretary), `09000000003` (operator) and `09000000004` (specialist). If the printed passwords are lost, use a fresh database (`php artisan migrate:fresh --seed`).
+
+In `local` environment the style guide is at `/_styleguide`.
 
 ## Checks
 

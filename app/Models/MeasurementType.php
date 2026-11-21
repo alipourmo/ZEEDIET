@@ -22,6 +22,16 @@ class MeasurementType extends Model
     ];
 
     /**
+     * The label in the current language, from its translation key (spec 6.4).
+     */
+    public function label(): string
+    {
+        $label = __((string) $this->getAttribute('label_key'));
+
+        return is_string($label) ? $label : (string) $this->getAttribute('key');
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

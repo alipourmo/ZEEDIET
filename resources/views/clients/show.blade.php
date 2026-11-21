@@ -57,6 +57,10 @@
         </div>
     </div>
 
+    @isset($extraView)
+        @include($extraView)
+    @endisset
+
     @if ($deleteUrl)
         <form method="POST" action="{{ $deleteUrl }}" class="form__actions"
               onsubmit="return confirm(@js(__('clients.delete_confirm')))">

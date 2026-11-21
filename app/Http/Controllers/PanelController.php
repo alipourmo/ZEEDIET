@@ -29,6 +29,7 @@ class PanelController extends Controller
     {
         return $this->panel('specialist', [
             'reviewsUrl' => route('specialist.reviews.index'),
+            'followUpsUrl' => route('specialist.followups'),
         ]);
     }
 

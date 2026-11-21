@@ -475,3 +475,14 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Review page.** The chart shows the client's published history, not the pending set. The chart script is loaded only when there is data (`@push('scripts')` with `@once`).
 - **Not yet.** The chart on the client file (S4-T4) and the "My progress" tile (V1.0). Visual check at 375 px and 1280 px is still to be done in a browser.
 
+
+## 2026-11-21 — S4-T4: specialist client file, notes and follow-ups
+
+- **Notes are append-only.** `specialist_notes` (spec 6.5) rows cannot be updated or deleted (the model throws). A correction is a new note. Notes are written only by `note.manage` (specialist; admin and secretary cannot reach the panel and the service refuses too).
+- **The next follow-up is the latest note's date.** A client's follow-up is the `next_follow_up_on` of its most recent note, even if that is empty. The note form is pre-filled with the current follow-up, so adding a note keeps it. Clearing the date on a new note removes the follow-up. Dates are typed in Jalali and stored as Gregorian.
+- **Follow-ups due.** `specialist.followups` lists, for each client, the latest note when its date is within seven days or already past (overdue is marked). Soft-deleted clients are left out. Oldest date first. Only names and dates are shown, so the list is not audited, like the operator's list.
+- **Audit.** Adding a note writes a `create` row with the follow-up date only, never the text. Opening the client file writes one `view` row for the client with `sections: [notes, measurements]`. Each page load is audited, as the medical read already is.
+- **Client file sections.** Below the details card, on the shared client view: follow-up, notes (newest first, with author and date), the first and latest published values with the change, the trend chart (S4-T3, published sets only), and the published history (newest first). Pending sets are never shown.
+- **Medical tab.** Unchanged from S1: the medical record is edited on its own page (`specialist.clients.medical.edit`), audited, and was already editable.
+- **Not in this task.** The appointments list on the client file (spec 8.4) and the "My progress" tile (V1.0). The client's own notes are not in the portal (notes are staff-only).
+- **Routes.** `specialist.notes.store` (POST `/specialist/clients/{client}/notes`) and `specialist.followups` (GET `/specialist/followups`), both behind `area:specialist` and `can:note.manage`. The follow-ups link is on the specialist home page.

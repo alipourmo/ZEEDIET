@@ -609,3 +609,22 @@ main {
     block-size: 16rem;
     margin: 1rem 0;
 }
+
+/* Client file (S4-T4): notes keep their line breaks; the history list is plain. */
+.note {
+    padding-block: 0.75rem;
+    border-block-start: 1px solid var(--line);
+}
+.note__body {
+    white-space: pre-line;
+}
+.history {
+    list-style: none;
+    padding: 0;
+    margin-block: 1rem 0;
+}
+.history li {
+    padding-block: 0.5rem;
+    border-block-end: 1px solid var(--line);
+}
+

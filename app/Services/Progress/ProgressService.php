@@ -83,7 +83,7 @@ final class ProgressService
 
             $rows[] = [
                 'key' => $key,
-                'label' => $this->label($type),
+                'label' => $type->label(),
                 'unit' => (string) $type->getAttribute('unit'),
                 'first' => $first,
                 'latest' => $latest,
@@ -143,7 +143,7 @@ final class ProgressService
 
             $series[] = [
                 'key' => $key,
-                'label' => $this->label($type),
+                'label' => $type->label(),
                 'unit' => (string) $type->getAttribute('unit'),
                 'color' => self::COLORS[$key] ?? self::DEFAULT_COLOR,
                 'data' => $data,
@@ -171,12 +171,5 @@ final class ProgressService
     private function activeTypes(): Collection
     {
         return MeasurementType::query()->where('is_active', true)->orderBy('sort_order')->get();
-    }
-
-    private function label(MeasurementType $type): string
-    {
-        $label = __((string) $type->getAttribute('label_key'));
-
-        return is_string($label) ? $label : (string) $type->getAttribute('key');
     }
 }

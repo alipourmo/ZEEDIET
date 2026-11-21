@@ -23,7 +23,9 @@ use App\Http\Controllers\PanelController;
 use App\Http\Controllers\PreviewController;
 use App\Http\Controllers\Specialist\ClientController as SpecialistClientController;
 use App\Http\Controllers\Specialist\ClientMedicalController as SpecialistClientMedicalController;
+use App\Http\Controllers\Specialist\FollowUpController as SpecialistFollowUpController;
 use App\Http\Controllers\Specialist\ReviewController as SpecialistReviewController;
+use App\Http\Controllers\Specialist\SpecialistNoteController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PreviewController::class, 'home'])->name('preview.home');
@@ -171,6 +173,15 @@ Route::middleware(['auth', 'area:specialist'])->group(function (): void {
         Route::get('/{client}/medical', [SpecialistClientMedicalController::class, 'edit'])->middleware('can:medical.view')->name('medical.edit');
         Route::put('/{client}/medical', [SpecialistClientMedicalController::class, 'update'])->middleware('can:medical.update')->name('medical.update');
     });
+
+    // A note on a client, and the follow-ups due within seven days, or overdue (spec 8.4).
+    Route::post('/specialist/clients/{client}/notes', [SpecialistNoteController::class, 'store'])
+        ->middleware('can:note.manage')
+        ->name('specialist.notes.store');
+
+    Route::get('/specialist/followups', [SpecialistFollowUpController::class, 'index'])
+        ->middleware('can:note.manage')
+        ->name('specialist.followups');
 
     // Review inbox and review page (spec section 8.4). Pending sets only; the workflow checks measurement.review again.
     Route::prefix('specialist/reviews')->name('specialist.reviews.')->middleware('can:measurement.review')->group(function (): void {

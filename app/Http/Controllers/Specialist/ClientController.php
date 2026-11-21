@@ -6,7 +6,10 @@ namespace App\Http\Controllers\Specialist;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\User;
+use App\Services\Specialist\ClientFile;
 use App\Support\ClientAlertBadges;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -16,10 +19,18 @@ use Illuminate\View\View;
  */
 class ClientController extends Controller
 {
-    public function show(Client $client): View
+    public function __construct(private readonly ClientFile $clientFile) {}
+
+    public function show(Request $request, Client $client): View
     {
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
+
         return view('clients.show', [
             'client' => $client,
+            'extraView' => 'specialist.clients.file',
+            'file' => $this->clientFile->open($client, $user),
+            'canManageNotes' => Gate::allows('note.manage'),
             'summaryUrl' => route('specialist.clients.show', $client),
             'badges' => Gate::allows('medical.view_alerts') ? ClientAlertBadges::fromClient($client) : null,
             'editUrl' => null,

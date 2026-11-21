@@ -14,6 +14,10 @@
         <p><a class="btn btn--primary" href="{{ $reviewsUrl }}">{{ __('reviews.inbox_link') }}</a></p>
     @endisset
 
+    @isset($followUpsUrl)
+        <p><a class="btn btn--secondary" href="{{ $followUpsUrl }}">{{ __('followups.link') }}</a></p>
+    @endisset
+
     @isset($entriesUrl)
         <p><a class="btn btn--secondary" href="{{ $entriesUrl }}">{{ __('operator.entries_link') }}</a></p>
     @endisset

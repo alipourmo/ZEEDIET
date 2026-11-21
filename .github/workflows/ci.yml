@@ -388,3 +388,63 @@ jobs:
           if BACKUP_ENCRYPTION_KEY="base64:$(openssl rand -base64 32)" php artisan backup:restore-test --file="$(basename "$ARCHIVE")"; then
             echo "::error::a restore with the wrong key succeeded"; exit 1
           fi
+
+  # Definition of Done (spec 19): RTL and layout checked at 375 px and 1280 px. Headless Chromium opens the public
+  # sign-in pages (staff and client) at both widths. It fails on wrong direction or language, horizontal scrolling,
+  # elements past the edge, or the Vazirmatn font not loaded. Screenshots are kept as a workflow artifact.
+  layout:
+    name: Layout at 375 px and 1280 px (RTL)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, zip, pdo_sqlite, sqlite3, openssl, tokenizer, xml, ctype, fileinfo
+          coverage: none
+
+      - name: Install and seed
+        run: |
+          cp .env.example .env
+          composer install --no-interaction --no-progress --prefer-dist
+          php artisan key:generate
+          touch database/database.sqlite
+          php artisan migrate --seed --force
+
+      - name: Start the app
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 > build-serve.log 2>&1 &
+          for _ in $(seq 1 30); do
+            curl -fsS -o /dev/null http://127.0.0.1:8000/login && break
+            sleep 1
+          done
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Playwright and Chromium
+        run: |
+          mkdir -p build/ui
+          cd build/ui
+          npm init -y > /dev/null
+          npm install playwright --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Layout check
+        run: |
+          cp scripts/layout-check.mjs build/ui/
+          node build/ui/layout-check.mjs
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: layout-screenshots
+          path: build/layout/
+          if-no-files-found: ignore

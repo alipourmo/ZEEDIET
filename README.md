@@ -46,7 +46,9 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S5-T2: event wiring (report_ready, appointment events) and reminder scheduler | Done with S5-T1 (CI green on `f63751c`) |
 | S5-T3: client OTP login (5-digit code, 3-minute expiry, rate limits, client guard) | Done (CI green on `80f2a68`) |
 | S5-T4: client portal (five tiles, reports, appointments read-only, sessions, payments; `ClientOwnedScope`) | Done (CI green on `80f2a68`) |
-| S5-T5 to S5-T7: hardening, performance, release checklist | Not yet |
+| S5-T5: backup (`backup:run`, `backup:restore-test`), `clients:purge`, security headers and CSP, HSTS in production, OTP check limit, route and 403 matrix | Done (CI pending on the docs commit) |
+| S5-T6: performance pass (2,000 clients, 20,000 appointments, list pages under 300 ms) and `starts_at` index | Done (CI pending on the docs commit) |
+| S5-T7: `docs/RELEASE.md` (migrations, env, Supervisor, cron, SSL, backups, rollback) and `docs/user-guide-fa.md` | Done |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).
 
@@ -95,6 +97,7 @@ See `.env.example` for the full list with comments. The important ones:
 | `KAVENEGAR_API_KEY`, `KAVENEGAR_SENDER` | SMS provider credentials. Never commit. |
 | `CLINIC_NAME`, `CLINIC_REMINDER_HOURS_BEFORE` | Clinic settings (`config/clinic.php`) |
 | `BACKUP_ENCRYPTION_KEY`, `BACKUP_DISK` | Backup encryption and off-server disk (S5) |
+| `CLINIC_RETENTION_DAYS` | Days a deleted client is kept before `clients:purge` may remove them. Empty blocks purge. |
 
 ## Deployment
 
@@ -112,14 +115,23 @@ Do not put real client data into the preview.
 
 Target: a Linux VPS in Iran with Nginx, PHP-FPM 8.4, MySQL 8, Supervisor (queue worker) and cron (`* * * * * php artisan schedule:run`). The hosting decision is still open. The release checklist (`docs/RELEASE.md`) is written in S5.
 
-## Commands planned for later sprints
+## Operations commands
 
-- `php artisan appointments:send-reminders` (every 15 minutes, via scheduler)
-- `php artisan backup:run`, `php artisan backup:restore-test` (S5)
-- `php artisan clients:purge {id}` (admin-confirmed hard delete after retention, S5)
+| Command | When | Purpose |
+|---|---|---|
+| `php artisan appointments:send-reminders` | every 15 minutes (scheduler) | 24-hour appointment reminders |
+| `php artisan backup:run` | nightly, 02:30 (scheduler) | Encrypted backup to `BACKUP_DISK`, with retention (14 daily, 8 weekly) |
+| `php artisan backup:restore-test [--file=NAME]` | before go-live and monthly | Restores the newest (or named) backup into a scratch schema and checks every row count |
+| `php artisan clients:purge {id}` | after the retention period, by the admin's decision | Shows the rows; with `--confirm` hard-deletes a soft-deleted client and writes an audit row |
+
+Backup needs `BACKUP_ENCRYPTION_KEY`. Purge needs `CLINIC_RETENTION_DAYS`. Without them the commands refuse to run.
+Full release steps: [docs/RELEASE.md](docs/RELEASE.md). Staff and client guide (Persian): [docs/user-guide-fa.md](docs/user-guide-fa.md).
 
 ## Security
 
 - No secrets in the repository. `.env` is git-ignored.
-- The preview is `noindex`. `robots.txt` disallows all.
+- The preview is `noindex`. `robots.txt` disallows all. Every web response carries `X-Robots-Tag: noindex, nofollow`.
+- Security headers on every response: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin`, a strict `Content-Security-Policy` (no inline scripts or styles). `Strict-Transport-Security` is sent in production.
+- Client sessions use secure, HttpOnly, SameSite=Lax cookies in production (spec 10.1).
+- Backups are AES-256-GCM encrypted. Route protection and the role-by-page refusal matrix are tested (`RouteProtectionTest`, `PermissionMatrixTest`).
 - All user-facing text is Persian and lives in `lang/fa/`.

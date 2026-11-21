@@ -32,7 +32,7 @@
         </div>
     </form>
 
-    @if ($logs->isEmpty())
+    @if ($logs->getCollection()->isEmpty())
         <p class="empty-state muted">{{ __('sms.log.empty') }}</p>
     @else
         <div class="table-wrap">

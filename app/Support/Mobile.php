@@ -34,4 +34,14 @@ final class Mobile
 
         return preg_match('/^09\d{9}$/', $value) === 1 ? $value : null;
     }
+
+    /**
+     * Hides all but the last four digits, for logs and for lists (spec section 9: no full mobile in the UI log).
+     */
+    public static function mask(string $mobile): string
+    {
+        $length = strlen($mobile);
+
+        return str_repeat('•', max(0, $length - 4)).substr($mobile, -4);
+    }
 }

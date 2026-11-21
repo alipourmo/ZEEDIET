@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CatalogSeeder::class,
             ScheduleSeeder::class,
             MeasurementTypeSeeder::class,
+            SmsTemplateSeeder::class,
         ]);
     }
 }

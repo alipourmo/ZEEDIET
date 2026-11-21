@@ -42,7 +42,9 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S4-T4: specialist client file (notes, next follow-up, measurement history and chart) and follow-ups due page | Done (CI green on `fe1f03b`) |
 | S4-T5: payments (record, list with Jalali date filter, client ledger, admin-only reversal; no edit or delete) | Done (CI green on `9a57227`) |
 | S4-T6: admin dashboard cards and daily report (admin only) | Done (CI green on `c8c3807`) |
-| Operator, specialist, portal, SMS | Not yet (S3–S5 and later) |
+| S5-T1: SMS gateway (Kavenegar, log), dispatcher with retries, templates, sms_log with resend, appointment events, reminder command | Built, CI pending |
+| S5-T2 to S5-T7: OTP login, client portal, hardening, performance, release checklist | Not yet |
+| Client portal and OTP | Not yet (S5) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).
 

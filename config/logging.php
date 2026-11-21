@@ -52,6 +52,14 @@ return [
 
     'channels' => [
 
+        // Local and test SMS messages (spec 7.5). Never used with the kavenegar driver.
+        'sms' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/sms.log'),
+            'level' => 'info',
+            'replace_placeholders' => true,
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),

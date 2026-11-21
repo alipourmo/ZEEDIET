@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\HolidayController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\SmsLogController;
+use App\Http\Controllers\Admin\SmsTemplateController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -143,6 +145,20 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
             ->middleware('can:payment.reverse')->name('reverse.form');
         Route::post('/{payment}/reverse', [PaymentController::class, 'reverse'])
             ->middleware('can:payment.reverse')->name('reverse');
+    });
+
+    // SMS templates and the SMS log (spec sections 8.2 and 9). Templates and resend: admin only (sms.templates.manage).
+    // Log: admin and secretary (sms.log.view).
+    // Resend sends a new message to a client, so it is admin only, like editing the text.
+    Route::middleware('can:sms.templates.manage')->group(function (): void {
+        Route::get('admin/sms/templates', [SmsTemplateController::class, 'index'])->name('admin.sms.templates');
+        Route::get('admin/sms/templates/{template}/edit', [SmsTemplateController::class, 'edit'])->name('admin.sms.templates.edit');
+        Route::put('admin/sms/templates/{template}', [SmsTemplateController::class, 'update'])->name('admin.sms.templates.update');
+        Route::post('admin/sms/log/{log}/resend', [SmsLogController::class, 'resend'])->name('admin.sms.log.resend');
+    });
+
+    Route::middleware('can:sms.log.view')->group(function (): void {
+        Route::get('admin/sms/log', [SmsLogController::class, 'index'])->name('admin.sms.log');
     });
 
     // Calendar (spec section 8.2): day, week and month. Every row needs appointment.view_all.

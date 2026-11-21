@@ -7,6 +7,9 @@ namespace App\Services\Scheduling;
 use App\Enums\AppointmentSource;
 use App\Enums\AppointmentStatus;
 use App\Enums\AuditAction;
+use App\Events\AppointmentBooked;
+use App\Events\AppointmentCancelled;
+use App\Events\AppointmentRescheduled;
 use App\Models\Appointment;
 use App\Models\AppointmentStatusHistory;
 use App\Models\Client;
@@ -49,7 +52,7 @@ final class BookingService
      */
     public function book(array $data, User $actor): Appointment
     {
-        return DB::transaction(function () use ($data, $actor): Appointment {
+        $appointment = DB::transaction(function () use ($data, $actor): Appointment {
             $resources = $this->lock(
                 (int) $data['client_id'],
                 $this->optionalId($data, 'device_id'),
@@ -83,6 +86,10 @@ final class BookingService
 
             return $appointment;
         });
+
+        event(new AppointmentBooked($appointment));
+
+        return $appointment;
     }
 
     /**
@@ -94,7 +101,7 @@ final class BookingService
      */
     public function reschedule(Appointment $appointment, array $data, User $actor): Appointment
     {
-        return DB::transaction(function () use ($appointment, $data, $actor): Appointment {
+        $current = DB::transaction(function () use ($appointment, $data, $actor): Appointment {
             $current = Appointment::query()->whereKey($appointment->getKey())->lockForUpdate()->firstOrFail();
 
             $resources = $this->lock(
@@ -134,6 +141,10 @@ final class BookingService
 
             return $current;
         });
+
+        event(new AppointmentRescheduled($current));
+
+        return $current;
     }
 
     /**
@@ -142,7 +153,7 @@ final class BookingService
      */
     public function transition(Appointment $appointment, AppointmentStatus $to, User $actor, ?string $reason = null): Appointment
     {
-        return DB::transaction(function () use ($appointment, $to, $actor, $reason): Appointment {
+        $current = DB::transaction(function () use ($appointment, $to, $actor, $reason): Appointment {
             $current = Appointment::query()->whereKey($appointment->getKey())->lockForUpdate()->firstOrFail();
             $from = $current->currentStatus();
 
@@ -181,6 +192,12 @@ final class BookingService
 
             return $current;
         });
+
+        if ($to === AppointmentStatus::Cancelled) {
+            event(new AppointmentCancelled($current));
+        }
+
+        return $current;
     }
 
     /**

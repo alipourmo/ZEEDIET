@@ -29,3 +29,19 @@ test('jdate of null or empty is empty', function () {
     expect(Display::jdate(null))->toBe('');
     expect(Display::jdate(''))->toBe('');
 });
+
+test('jdatetime formats a DateTime in Asia/Tehran time with a 24-hour clock', function () {
+    // 2025-03-20 22:00 UTC is 2025-03-21 01:30 in Tehran.
+    $moment = new DateTimeImmutable('2025-03-20 22:00:00', new DateTimeZone('UTC'));
+
+    expect(Display::jdatetime($moment))->toBe('۱۴۰۴/۰۱/۰۱ ۰۱:۳۰');
+});
+
+test('jdatetime reads a string as local clinic time without converting it', function () {
+    expect(Display::jdatetime('2025-03-20 14:05:00'))->toBe('۱۴۰۳/۱۲/۳۰ ۱۴:۰۵');
+});
+
+test('jdatetime of null or empty is empty', function () {
+    expect(Display::jdatetime(null))->toBe('');
+    expect(Display::jdatetime(''))->toBe('');
+});

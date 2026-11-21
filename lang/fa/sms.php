@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'keys' => [
+        'otp' => 'کد ورود پنل مراجعه‌کننده',
+        'appointment_confirmed' => 'ثبت نوبت',
+        'appointment_reminder' => 'یادآوری نوبت',
+        'appointment_rescheduled' => 'تغییر زمان نوبت',
+        'appointment_cancelled' => 'لغو نوبت',
+        'report_ready' => 'آماده شدن گزارش',
+        'welcome' => 'خوش‌آمد (تبلیغاتی)',
+    ],
+    'status' => [
+        'queued' => 'در صف',
+        'sent' => 'ارسال شد',
+        'failed' => 'ناموفق',
+    ],
+    'templates' => [
+        'title' => 'قالب‌های پیامک',
+        'edit' => 'ویرایش قالب',
+        'col_key' => 'قالب',
+        'col_body' => 'متن',
+        'col_active' => 'فعال',
+        'active_yes' => 'بله',
+        'active_no' => 'خیر',
+        'body' => 'متن پیامک',
+        'body_hint' => 'حداکثر ۳۰۰ نویسه. فقط جانگهدارهای زیر مجاز است: :list.',
+        'otp_code_hint' => 'قالب کد ورود باید {code} را داشته باشد.',
+        'active' => 'قالب فعال باشد',
+        'save' => 'ذخیره',
+        'back' => 'بازگشت',
+        'saved' => 'قالب ذخیره شد.',
+    ],
+    'log' => [
+        'title' => 'گزارش پیامک‌ها',
+        'empty' => 'پیامکی ثبت نشده است.',
+        'filter' => 'فیلتر',
+        'filter_all' => 'همه',
+        'col_date' => 'زمان',
+        'col_mobile' => 'شماره',
+        'col_template' => 'قالب',
+        'col_status' => 'وضعیت',
+        'col_attempts' => 'تلاش',
+        'col_body' => 'متن',
+        'col_error' => 'خطا',
+        'resend' => 'ارسال دوباره',
+        'resent' => 'پیامک برای ارسال دوباره در صف قرار گرفت.',
+        'otp_redacted' => 'کد در گزارش ثبت نمی‌شود.',
+        'manual' => 'دستی',
+    ],
+    'errors' => [
+        'not_failed' => 'فقط پیامک‌های ناموفق را می‌توان دوباره ارسال کرد.',
+        'otp_not_resendable' => 'کد ورود دوباره ارسال نمی‌شود. مراجعه‌کننده باید کد تازه درخواست کند.',
+        'placeholder_unknown' => 'جانگهدار ناشناخته: :name.',
+        'placeholder_code' => 'جانگهدار {code} فقط در قالب کد ورود مجاز است.',
+        'otp_needs_code' => 'قالب کد ورود باید {code} داشته باشد.',
+        'body_required' => 'متن پیامک را بنویسید.',
+        'body_max' => 'متن پیامک بیش از ۳۰۰ نویسه است.',
+    ],
+];

@@ -29,10 +29,422 @@ jobs:
           php artisan key:generate --ansi
 
       - name: Pint (code style)
-        run: vendor/bin/pint --test
+        run: |
+          mkdir -p build
+          vendor/bin/pint --test --output-to-file build/pint.json --output-format json
+
+      - name: Summarise Pint failures
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+          try:
+              with open('build/pint.json', encoding='utf8') as handle:
+                  report = json.load(handle)
+          except Exception as error:
+              print(f"::error title=Pint::no report: {error}")
+              raise SystemExit(0)
+
+          files = [entry.get('name', '') for entry in report.get('files', []) if entry.get('name')]
+          errors = report.get('errors', [])
+          print(f"Pint: {len(files)} file(s) need formatting, {len(errors)} error(s)")
+
+          for entry in errors[:10]:
+              print(f"::error title=Pint error::{escape(json.dumps(entry)[:1000])}")
+
+          for name in files[:40]:
+              print(f"::error file={name},title=Pint::needs formatting")
+
+          if files:
+              # Fix a copy in this job only (never committed) so the diff can be read from the annotations.
+              subprocess.run(['vendor/bin/pint', '--quiet', *files], check=False)
+              diff = subprocess.run(['git', 'diff', '-U3', '--', *files], capture_output=True, text=True, check=False).stdout
+              print(f"Pint diff: {len(diff)} characters")
+              for offset in range(0, min(len(diff), 12000), 1200):
+                  print(f"::error title=Pint diff::{escape(diff[offset:offset + 1200])}")
+          PY
 
       - name: PHPStan (level 6)
-        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress --error-format=github
 
       - name: Pest
-        run: vendor/bin/pest
+        run: |
+          set -o pipefail
+          mkdir -p build
+          vendor/bin/pest --log-junit build/junit.xml 2>&1 | tee build/pest.log
+
+      # Only on failure: one annotation per failing test, so the cause is readable without the raw log.
+      - name: Summarise Pest results
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          try:
+              root = ET.parse('build/junit.xml').getroot()
+          except Exception as error:
+              print(f"::error::no JUnit report: {error}")
+              log = ''
+              try:
+                  with open('build/pest.log', encoding='utf8') as handle:
+                      log = handle.read()
+              except OSError:
+                  pass
+              for offset in range(max(0, len(log) - 3600), len(log), 1200):
+                  print(f"::error title=Pest log::{escape(log[offset:offset + 1200])}")
+              raise SystemExit(0)
+          count = 0
+          for case in root.iter('testcase'):
+              for child in case:
+                  if child.tag in ('failure', 'error'):
+                      count += 1
+                      if count <= 12:
+                          message = (child.get('message') or child.text or '').replace('\n', ' | ')[:400]
+                          print(f"::error title=Pest {child.tag}::{case.get('name')} :: {message}")
+          tests = skipped = 0
+          names = []
+          for case in root.iter('testcase'):
+              tests += 1
+              if any(child.tag == 'skipped' for child in case):
+                  skipped += 1
+                  names.append(case.get('name'))
+          print(f"failing tests: {count}; tests run: {tests}; skipped: {skipped}")
+          print(f"::notice title=Pest totals::{count} failing, {tests} run, {skipped} skipped")
+          for name in names[:20]:
+              print(f"skipped: {name}")
+              print(f"::notice title=Pest skipped::{name}")
+          PY
+
+      # Every migration must roll back on a fresh database and then migrate forward again. RefreshDatabase only
+      # checks the up direction.
+      - name: Migrations are reversible on a fresh database
+        run: |
+          touch database/database.sqlite
+          php artisan migrate:fresh --force
+          php artisan migrate:reset --force
+          if php artisan migrate:status | grep -q "Ran"; then echo "::error::migrations still marked as run after reset"; exit 1; fi
+          php artisan migrate --force
+
+  # The whole suite again on MySQL 8, the production database (spec section 3). This runs the concurrency test,
+  # which needs real row locks, and checks that nothing depends on SQLite behaviour.
+  mysql:
+    name: Pest on MySQL 8
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: zeediet_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: zeediet_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, zip, pdo_mysql, openssl, tokenizer, xml, ctype, fileinfo
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Pest on MySQL
+        run: |
+          set -o pipefail
+          mkdir -p build
+          vendor/bin/pest --log-junit build/junit.xml 2>&1 | tee build/pest.log
+
+      - name: Summarise Pest results
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          try:
+              root = ET.parse('build/junit.xml').getroot()
+          except Exception as error:
+              print(f"::error::no JUnit report: {error}")
+              log = ''
+              try:
+                  with open('build/pest.log', encoding='utf8') as handle:
+                      log = handle.read()
+              except OSError:
+                  pass
+              for offset in range(max(0, len(log) - 3600), len(log), 1200):
+                  print(f"::error title=Pest log::{escape(log[offset:offset + 1200])}")
+              raise SystemExit(0)
+          count = 0
+          for case in root.iter('testcase'):
+              for child in case:
+                  if child.tag in ('failure', 'error'):
+                      count += 1
+                      if count <= 12:
+                          message = (child.get('message') or child.text or '').replace('\n', ' | ')[:400]
+                          print(f"::error title=Pest {child.tag}::{case.get('name')} :: {message}")
+          tests = skipped = 0
+          names = []
+          for case in root.iter('testcase'):
+              tests += 1
+              if any(child.tag == 'skipped' for child in case):
+                  skipped += 1
+                  names.append(case.get('name'))
+          print(f"failing tests: {count}; tests run: {tests}; skipped: {skipped}")
+          print(f"::notice title=Pest totals::{count} failing, {tests} run, {skipped} skipped")
+          for name in names[:20]:
+              print(f"skipped: {name}")
+              print(f"::notice title=Pest skipped::{name}")
+          PY
+
+      # Every migration must roll back on a fresh database and then migrate forward again. RefreshDatabase only
+      # checks the up direction.
+      - name: Migrations are reversible on a fresh database
+        run: |
+          touch database/database.sqlite
+          php artisan migrate:fresh --force
+          php artisan migrate:reset --force
+          if php artisan migrate:status | grep -q "Ran"; then echo "::error::migrations still marked as run after reset"; exit 1; fi
+          php artisan migrate --force
+
+  # MVP gate item 8 (spec 12): a fresh install, followed from README.md only, reaches a working sign-in in under 15
+  # minutes. The steps are the README's local setup. The sign-in uses the temporary password the seed prints, the same
+  # way a clinic would. The 15 minutes are measured on this runner, which is a proxy for a clinic computer.
+  fresh-install:
+    name: Fresh install from README
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Start the clock
+        run: echo "FRESH_INSTALL_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, zip, pdo_sqlite, sqlite3, openssl, tokenizer, xml, ctype, fileinfo
+          coverage: none
+
+      - name: README local setup
+        run: |
+          mkdir -p build
+          cp .env.example .env
+          composer install --no-interaction --no-progress --prefer-dist
+          php artisan key:generate
+          touch database/database.sqlite
+          php artisan migrate --seed --force 2>&1 | tee build/seed.log
+
+      - name: Sign in with the printed temporary password
+        run: |
+          set -euo pipefail
+          php artisan serve --host=127.0.0.1 --port=8000 > build/serve.log 2>&1 &
+          for _ in $(seq 1 30); do
+            curl -fsS -o /dev/null http://127.0.0.1:8000/login && break
+            sleep 1
+          done
+
+          PASSWORD=$(grep -o 'temporary password [^ ]*' build/seed.log | head -1 | awk '{print $NF}')
+          if [ -z "$PASSWORD" ]; then echo "::error::the seed printed no temporary password"; exit 1; fi
+
+          JAR=build/cookies.txt
+          TOKEN=$(curl -fsS -c "$JAR" -b "$JAR" http://127.0.0.1:8000/login | grep -o 'name="_token" value="[^"]*"' | head -1 | sed 's/.*value="//;s/"$//')
+          if [ -z "$TOKEN" ]; then echo "::error::no sign-in form token"; exit 1; fi
+
+          # -L follows the redirects. A new account must change its password, so the final page is the change page.
+          RESULT=$(curl -sL -c "$JAR" -b "$JAR" -o build/after-login.html -w '%{http_code} %{url_effective}' \
+            http://127.0.0.1:8000/login \
+            --data-urlencode "_token=$TOKEN" \
+            --data-urlencode "mobile=09000000001" \
+            --data-urlencode "password=$PASSWORD")
+          echo "sign-in: $RESULT"
+
+          case "$RESULT" in
+            "200 http://127.0.0.1:8000/password/change") echo "::notice title=Fresh install::sign-in works; the first page is the password change" ;;
+            *) echo "::error::sign-in did not reach the password change page: $RESULT"; tail -30 build/serve.log; exit 1 ;;
+          esac
+
+      - name: Fresh install in under 15 minutes
+        if: always()
+        run: |
+          ELAPSED=$(( $(date +%s) - FRESH_INSTALL_START ))
+          echo "::notice title=Fresh install::${ELAPSED} seconds from the first step to the sign-in check (target 900)"
+          if [ "$ELAPSED" -gt 900 ]; then echo "::error::fresh install took ${ELAPSED} seconds"; exit 1; fi
+
+  # MVP gate item 7 (spec 12): backup:run and backup:restore-test on a seeded MySQL 8 database. The archive must be
+  # unreadable without the key, and the restore must match every table's row count.
+  backups:
+    name: Backup and restore test on MySQL 8
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: zeediet_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: zeediet_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      BACKUP_DISK: local
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, zip, pdo_mysql, openssl, tokenizer, xml, ctype, fileinfo
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare environment and a backup key
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          echo "BACKUP_ENCRYPTION_KEY=base64:$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+
+      - name: Migrate and seed
+        run: |
+          php artisan migrate --force
+          php artisan db:seed --force
+
+      - name: Add a client with personal data
+        run: |
+          # No tinker in this project, so the app is booted directly for one factory call.
+          php -r "require 'vendor/autoload.php'; \$app = require 'bootstrap/app.php'; \$app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); App\\Models\\Client::factory()->create(['first_name' => 'Backup', 'last_name' => 'Check', 'mobile' => '09121234567']);"
+          php -r "require 'vendor/autoload.php'; \$app = require 'bootstrap/app.php'; \$app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); echo 'clients: '.App\\Models\\Client::count().PHP_EOL;"
+
+      - name: backup:run
+        run: php artisan backup:run
+
+      - name: The archive hides personal data
+        run: |
+          set -euo pipefail
+          ARCHIVE=$(find storage -name 'zeediet-*.zdb' | head -1)
+          if [ -z "$ARCHIVE" ]; then echo "::error::no archive written"; exit 1; fi
+          if [ "$(head -c 4 "$ARCHIVE")" != "ZDB1" ]; then echo "::error::archive has no ZDB1 header"; exit 1; fi
+          for needle in 09121234567 09000000001 Backup; do
+            if grep -q "$needle" "$ARCHIVE"; then echo "::error::'$needle' is readable in the archive"; exit 1; fi
+          done
+          echo "::notice title=Archive::$(basename "$ARCHIVE") ($(stat -c %s "$ARCHIVE") bytes), no personal data in plain text"
+
+      - name: backup:restore-test
+        run: php artisan backup:restore-test
+
+      - name: The archive is refused with another key
+        run: |
+          set -euo pipefail
+          ARCHIVE=$(find storage -name 'zeediet-*.zdb' | head -1)
+          if BACKUP_ENCRYPTION_KEY="base64:$(openssl rand -base64 32)" php artisan backup:restore-test --file="$(basename "$ARCHIVE")"; then
+            echo "::error::a restore with the wrong key succeeded"; exit 1
+          fi
+
+  # Definition of Done (spec 19): RTL and layout checked at 375 px and 1280 px. Headless Chromium opens the public
+  # sign-in pages (staff and client) at both widths. It fails on wrong direction or language, horizontal scrolling,
+  # elements past the edge, or the Vazirmatn font not loaded. Screenshots are kept as a workflow artifact.
+  layout:
+    name: Layout at 375 px and 1280 px (RTL)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, zip, pdo_sqlite, sqlite3, openssl, tokenizer, xml, ctype, fileinfo
+          coverage: none
+
+      - name: Install and seed
+        run: |
+          cp .env.example .env
+          composer install --no-interaction --no-progress --prefer-dist
+          php artisan key:generate
+          touch database/database.sqlite
+          php artisan migrate --seed --force
+
+      - name: Start the app
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 > build-serve.log 2>&1 &
+          for _ in $(seq 1 30); do
+            curl -fsS -o /dev/null http://127.0.0.1:8000/login && break
+            sleep 1
+          done
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Playwright and Chromium
+        run: |
+          mkdir -p build/ui
+          cd build/ui
+          npm init -y > /dev/null
+          npm install playwright --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Layout check
+        run: |
+          cp scripts/layout-check.mjs build/ui/
+          node build/ui/layout-check.mjs
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: layout-screenshots
+          path: build/layout/
+          if-no-files-found: ignore

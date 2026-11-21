@@ -44,6 +44,26 @@ final class Display
     }
 
     /**
+     * Formats a date and time as Persian Jalali date and 24-hour time, e.g. ۱۴۰۳/۱۲/۳۰ ۱۴:۰۵.
+     *
+     * A DateTime is converted to Asia/Tehran. A string is read as local clinic time and is not converted.
+     */
+    public static function jdatetime(DateTimeInterface|string|null $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $local = $value instanceof DateTimeInterface
+            ? DateTimeImmutable::createFromInterface($value)->setTimezone(new DateTimeZone(self::CLINIC_TIMEZONE))
+            : new DateTimeImmutable($value, new DateTimeZone(self::CLINIC_TIMEZONE));
+
+        $date = Jalali::formatGregorianAsJalali($local->format('Y-m-d'));
+
+        return Digits::toPersian($date.' '.$local->format('H:i'));
+    }
+
+    /**
      * Formats a Gregorian date (or a DateTime, converted to Asia/Tehran) as a Persian Jalali date, e.g. ۱۴۰۳/۱۲/۳۰.
      */
     public static function jdate(DateTimeInterface|string|null $value): string

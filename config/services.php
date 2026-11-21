@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // SMS (spec section 9). 'log' is for local development and tests only; it refuses to send in production.
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'kavenegar' => [
+            'api_key' => env('KAVENEGAR_API_KEY'),
+            'sender' => env('KAVENEGAR_SENDER'),
+        ],
+    ],
 ];

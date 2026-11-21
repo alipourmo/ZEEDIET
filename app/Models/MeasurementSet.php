@@ -1,0 +1,137 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Enums\MeasurementSetStatus;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use LogicException;
+
+/**
+ * One dated set of measurements (spec section 6.4). A set is never deleted: it is part of the client's record.
+ */
+class MeasurementSet extends Model
+{
+    /** @var list<string> */
+    protected $fillable = [
+        'client_id',
+        'measured_at',
+        'recorded_by',
+        'status',
+        'reviewed_by',
+        'published_at',
+        'supersedes_id',
+        'superseded_at',
+        'note',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'measured_at' => 'date',
+            'status' => MeasurementSetStatus::class,
+            'published_at' => 'datetime',
+            'superseded_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * A published set is immutable (spec 7.4). The only change allowed after publish is superseded_at, which is set on
+     * the old set when a correction is published. Everything else is refused here, so no code path can edit it.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (): void {
+            throw new LogicException('Measurement sets cannot be deleted.');
+        });
+
+        static::updating(function (MeasurementSet $set): void {
+            $original = $set->getOriginal('status');
+            $originalStatus = $original instanceof MeasurementSetStatus ? $original->value : (string) $original;
+
+            if ($originalStatus !== MeasurementSetStatus::Published->value) {
+                return;
+            }
+
+            $changed = array_diff(array_keys($set->getDirty()), ['superseded_at', 'updated_at']);
+
+            if ($changed !== [] || $set->getOriginal('superseded_at') !== null) {
+                throw new LogicException('A published measurement set is immutable. Publish a correction instead.');
+            }
+        });
+    }
+
+    /**
+     * The status with its enum type. Larastan reads the cast column as a string, so callers use this (see Appointment).
+     */
+    public function currentStatus(): MeasurementSetStatus
+    {
+        /** @var MeasurementSetStatus $status */
+        $status = $this->getAttribute('status');
+
+        return $status;
+    }
+
+    /**
+     * The sets a client sees and the charts use: published, and not superseded (spec 7.4).
+     *
+     * @param  Builder<MeasurementSet>  $query
+     */
+    public function scopeCurrent(Builder $query): void
+    {
+        $query->where('status', MeasurementSetStatus::Published->value)->whereNull('superseded_at');
+    }
+
+    /**
+     * The values of this set keyed by measurement type key, as stored (decimal strings).
+     *
+     * @return array<string, string>
+     */
+    public function valuesByKey(): array
+    {
+        $this->loadMissing('measurements.type');
+
+        $values = [];
+
+        foreach ($this->measurements as $measurement) {
+            $key = $measurement->type?->getAttribute('key');
+
+            if (is_string($key)) {
+                $values[$key] = (string) $measurement->getAttribute('value');
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * @return BelongsTo<Client, $this>
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function recorder(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    /**
+     * @return HasMany<Measurement, $this>
+     */
+    public function measurements(): HasMany
+    {
+        return $this->hasMany(Measurement::class);
+    }
+}

@@ -24,6 +24,9 @@ return [
         'end' => '20:00',
     ],
 
+    // Spacing, in minutes, of the start times offered by the appointment picker.
+    'slot_step_minutes' => 15,
+
     // Appointment reminders (section 9 of the spec).
     'reminder_hours_before' => (int) env('CLINIC_REMINDER_HOURS_BEFORE', 24),
     'reminder_window_minutes' => 15,
@@ -35,6 +38,14 @@ return [
     ],
 
     // Keys used in client_medical.device_contraindications and devices.contraindications.
+    // Accepted range for a measurement value, by unit (spec section 7.4). A value outside the range is rejected, never
+    // clamped. Units match measurement_types.unit.
+    'measurement_ranges' => [
+        'kg' => ['min' => 20, 'max' => 400],
+        'cm' => ['min' => 10, 'max' => 300],
+        '%' => ['min' => 1, 'max' => 70],
+    ],
+
     'contraindication_keys' => [
         'pregnancy',
         'pacemaker',
@@ -65,4 +76,24 @@ return [
         'login_rate_limit_per_minute' => 5,
     ],
 
+    // Client records (spec 10.10). A soft-deleted client may be purged only after this many days. Null means the
+    // clinic has not set a period, and clients:purge refuses to run.
+    'retention_days' => filled(env('CLINIC_RETENTION_DAYS')) ? (int) env('CLINIC_RETENTION_DAYS') : null,
+
+    // Client portal (spec 7.5). Codes are 5 digits, valid for 3 minutes, and a code takes at most 5 wrong tries.
+    // Requests: 3 per mobile per 10 minutes and 10 per IP per hour. A signed-in client's session lasts up to 30 days
+    // from sign-in and ends after 24 hours without a request.
+    'portal' => [
+        'otp_ttl_minutes' => 3,
+        'otp_max_wrong_attempts' => 5,
+        'otp_mobile_requests' => 3,
+        'otp_mobile_decay_minutes' => 10,
+        'otp_ip_requests' => 10,
+        'otp_ip_decay_minutes' => 60,
+        // Checks of a code, per IP. A new code resets the five wrong tries on the old one, so this caps guessing per IP.
+        'verify_ip_attempts' => 20,
+        'verify_ip_decay_minutes' => 10,
+        'session_absolute_days' => 30,
+        'session_idle_hours' => 24,
+    ],
 ];

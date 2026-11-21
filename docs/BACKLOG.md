@@ -7,9 +7,7 @@ Ideas and deferred work. Items that belong to a later sprint are listed with the
 - Commit `composer.lock` after the first `composer install` (see DECISIONS, 2026-11-17).
 - Vercel: grant the token project permissions, or import the repo in the Vercel dashboard (see DECISIONS).
 - Verify the first CI run and the first Vercel build; fix what they report.
-- Blade directives are in place (`@fa`, `@jdate`, `@money`). Input-normalising middleware for POST/PUT/PATCH and search query strings is not yet written (spec 7.9).
-- Full CSS token set and components from spec section 11 (table, modal, pagination, jalali-date-input, time-select, empty-state, flash, stat-tile, chart-line). Only card, button and badge exist.
-- `preventLazyLoading()` in `AppServiceProvider` for non-production.
+- Components from spec section 11 still to write: table, modal, pagination, jalali-date-input, time-select, empty-state, stat-tile, chart-line. Card, button, badge and flash exist.
 - Chart.js self-hosted in `public/vendor` (needed in S3/S4).
 
 ## S1 (next)

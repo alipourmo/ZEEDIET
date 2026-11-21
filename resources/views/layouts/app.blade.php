@@ -30,11 +30,13 @@
     </div>
 
     <main id="main" class="container">
+        <x-flash />
         @yield('content')
     </main>
 
     <footer class="site-footer">
         <div class="container">{{ config('clinic.name') }} · {{ __('common.clinic_city') }}</div>
     </footer>
+    @stack('scripts')
 </body>
 </html>

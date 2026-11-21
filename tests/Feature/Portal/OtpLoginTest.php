@@ -239,7 +239,8 @@ test('a staff session does not open the portal', function () {
 
 test('a client session does not open the staff panels', function () {
     // The staff routes check the default (staff) guard, so a client is treated as a guest and sent to staff sign-in.
-    $this->actingAs($this->client, 'client')
-        ->get(route('admin.home'))
-        ->assertRedirect(route('login'));
+    $this->actingAs($this->client, 'client');
+    auth()->shouldUse('web');
+
+    $this->get(route('admin.home'))->assertRedirect(route('login'));
 });

@@ -17,6 +17,8 @@ use App\Services\Measurements\MeasurementRecorder;
 use App\Services\Payments\PaymentService;
 use App\Services\Reports\ReportWorkflow;
 use App\Services\Scheduling\BookingService;
+use App\Support\Digits;
+use App\Support\Display;
 use Carbon\CarbonImmutable;
 use Database\Seeders\MeasurementTypeSeeder;
 
@@ -35,6 +37,10 @@ function portalActAs($test, Client $client): void
         'portal.login_at' => now()->timestamp,
         'portal.seen_at' => now()->timestamp,
     ]);
+
+    // actingAs() also makes the client guard the default guard. Staff routes read the default guard, so put it back:
+    // a real client session never sets it.
+    auth()->shouldUse('web');
 }
 
 /** A specialist-published report for the client. */
@@ -92,8 +98,8 @@ test('an open report shows its values and the change from the first published on
 
     $this->get(route('portal.reports.show', $latest))
         ->assertOk()
-        ->assertSee(\App\Support\Digits::toPersian('-4.50'))
-        ->assertSee(\App\Support\Digits::toPersian('75'));
+        ->assertSee(Digits::toPersian('-4.50'))
+        ->assertSee(Digits::toPersian('75'));
 });
 
 test('another client\'s report is not found: 404', function () {
@@ -111,12 +117,16 @@ test('an unpublished set is not found, even for its own client', function () {
 
     $this->get(route('portal.reports.show', $pending))->assertNotFound();
     $this->get(route('portal.reports'))->assertDontSee(route('portal.reports.show', $pending), false);
-    $this->get(route('portal.progress'))->assertOk()->assertDontSee(\App\Support\Digits::toPersian('99.9'));
+    $this->get(route('portal.progress'))->assertOk()->assertDontSee(Digits::toPersian('99.9'));
 });
 
 test('a superseded published set is not found: only the latest version is shown', function () {
     $old = portalPublished($this->me, ['weight' => '80.0']);
-    portalPublished($this->me, ['weight' => '78.0']);
+
+    // Only a correction supersedes a set (spec 7.4): a new pending set that points at the old one, then published.
+    $reviewer = User::factory()->role(StaffRole::Specialist)->create(['is_active' => true]);
+    $workflow = app(ReportWorkflow::class);
+    $workflow->publish($workflow->correct($old, $reviewer, ['weight' => '78.0']), $reviewer);
 
     portalActAs($this, $this->me);
 
@@ -143,11 +153,13 @@ test('appointments list shows only the client\'s own, and they are read-only', f
 
     portalActAs($this, $this->me);
 
-    $this->get(route('portal.appointments'))
+    $page = $this->get(route('portal.appointments'))
         ->assertOk()
         ->assertSee('جلسه مخصوص من')
-        ->assertDontSee('جلسه دیگری')
-        ->assertDontSee('<form', false);
+        ->assertDontSee('جلسه دیگری');
+
+    // The layout has its own sign-out form, so only the page content (inside <main>) is checked for forms.
+    expect((string) strstr((string) $page->getContent(), '<main'))->not->toContain('<form');
 });
 
 test('a cancelled appointment is not counted as upcoming on the home page', function () {
@@ -211,8 +223,8 @@ test('payments list shows only the client\'s own, with the net total', function 
 
     $this->get(route('portal.payments'))
         ->assertOk()
-        ->assertSee(\App\Support\Display::money(120000))
-        ->assertDontSee(\App\Support\Display::money(987000));
+        ->assertSee(Display::money(120000))
+        ->assertDontSee(Display::money(987000));
 });
 
 test('a client cannot reach the staff panels: they are treated as guests there', function () {

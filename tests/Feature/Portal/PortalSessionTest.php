@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 use App\Http\Middleware\PortalSession;
 use App\Models\Client;
+use App\Services\Sms\SmsGateway;
+use App\Services\Sms\SmsMessage;
+use App\Services\Sms\SmsResult;
 use Illuminate\Http\Request;
 
 // The portal session (spec 7.5): 30 days from sign-in, and it ends after 24 hours without a request.
 
 beforeEach(function () {
     $this->client = makeClient(['mobile' => '09121234567']);
-    $this->gateway = new class implements App\Services\Sms\SmsGateway
+    $this->gateway = new class implements SmsGateway
     {
-        /** @var list<App\Services\Sms\SmsMessage> */
+        /** @var list<SmsMessage> */
         public array $sent = [];
 
         public function name(): string
@@ -20,14 +23,14 @@ beforeEach(function () {
             return 'fake';
         }
 
-        public function send(App\Services\Sms\SmsMessage $message): App\Services\Sms\SmsResult
+        public function send(SmsMessage $message): SmsResult
         {
             $this->sent[] = $message;
 
-            return App\Services\Sms\SmsResult::sent('fake');
+            return SmsResult::sent('fake');
         }
     };
-    app()->instance(App\Services\Sms\SmsGateway::class, $this->gateway);
+    app()->instance(SmsGateway::class, $this->gateway);
 });
 
 /** Signs the client in through the real OTP flow. */

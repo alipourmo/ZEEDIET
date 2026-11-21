@@ -24,6 +24,8 @@ const PUBLIC_ROUTE_URIS = [
 // The portal URIs are public only as far as sign-in goes. Everything else under my-account needs the 'portal' guard.
 const PORTAL_PUBLIC_URIS = ['my-account/login', 'my-account/verify'];
 
+// Each protected portal route must list the 'portal' middleware, including the home page.
+
 test('the portal pages that need sign-in are behind the portal middleware', function () {
     foreach (Route::getRoutes() as $route) {
         $uri = $route->uri();
@@ -32,7 +34,11 @@ test('the portal pages that need sign-in are behind the portal middleware', func
             continue;
         }
 
-        expect($route->middleware())->toContain('portal', 'portal route not behind portal middleware: '.$uri);
+        // Only the sign-in pages are public. The portal home is the bare 'my-account' URI, which is not public.
+        // Checked through the router's own gate middleware list, which holds the alias even for grouped routes.
+        $names = collect(Route::gatherRouteMiddleware($route))->all();
+        expect(in_array(App\Http\Middleware\EnsurePortalClient::class, $names, true))
+            ->toBeTrue('portal route not behind portal middleware: '.$uri.' ('.implode(',', $route->middleware()).')');
     }
 });
 

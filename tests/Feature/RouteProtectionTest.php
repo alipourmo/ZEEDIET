@@ -35,10 +35,9 @@ test('the portal pages that need sign-in are behind the portal middleware', func
         }
 
         // Only the sign-in pages are public. The portal home is the bare 'my-account' URI, which is not public.
-        // Checked through the router's own gate middleware list, which holds the alias even for grouped routes.
-        $names = collect(Route::gatherRouteMiddleware($route))->all();
-        expect(in_array(App\Http\Middleware\EnsurePortalClient::class, $names, true))
-            ->toBeTrue('portal route not behind portal middleware: '.$uri.' ('.implode(',', $route->middleware()).')');
+        // The declared middleware names: the 'portal' alias is what routes/web.php attaches (see bootstrap/app.php).
+        $declared = $route->middleware();
+        expect(in_array('portal', $declared, true))->toBeTrue('portal route not behind portal middleware: '.$uri.' ['.implode(',', $declared).']');
     }
 });
 

@@ -90,6 +90,9 @@ return [
         'otp_mobile_decay_minutes' => 10,
         'otp_ip_requests' => 10,
         'otp_ip_decay_minutes' => 60,
+        // Checks of a code, per IP. A new code resets the five wrong tries on the old one, so this caps guessing per IP.
+        'verify_ip_attempts' => 20,
+        'verify_ip_decay_minutes' => 10,
         'session_absolute_days' => 30,
         'session_idle_hours' => 24,
     ],

@@ -76,8 +76,20 @@ final class OtpService
      * Checks a code. Returns the client when the code is right, the code has not expired, and it had fewer than five
      * wrong tries. Every other case returns null, and a wrong try is counted on the newest valid code.
      */
-    public function verify(string $mobile, string $code): ?Client
+    public function verify(string $mobile, string $code, string $ip = ''): ?Client
     {
+        if ($ip !== '') {
+            $verifyKey = 'portal-otp|verify|'.$ip;
+            $limited = RateLimiter::tooManyAttempts($verifyKey, (int) config('clinic.portal.verify_ip_attempts'));
+
+            // Every check counts, right or wrong, so a guessing run stays refused until the window clears.
+            RateLimiter::hit($verifyKey, (int) config('clinic.portal.verify_ip_decay_minutes') * 60);
+
+            if ($limited) {
+                return null;
+            }
+        }
+
         $otp = OtpCode::query()
             ->where('mobile', $mobile)
             ->whereNull('consumed_at')

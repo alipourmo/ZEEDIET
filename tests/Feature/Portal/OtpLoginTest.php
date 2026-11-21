@@ -244,3 +244,23 @@ test('a client session does not open the staff panels', function () {
 
     $this->get(route('admin.home'))->assertRedirect(route('login'));
 });
+
+test('the code check is limited per IP, so a new code cannot reset the guessing budget', function () {
+    portalAskForCode($this, '09121234567');
+    $code = portalCodeFrom($this->gateway);
+
+    // Twenty checks from one IP use up the budget (spec 7.5 leaves the verify step open, so the limit is ours).
+    for ($i = 0; $i < 20; $i++) {
+        $this->post(route('portal.verify.store'), ['code' => portalWrongCode($code)]);
+    }
+
+    // A fresh code for the same mobile does not reopen the IP budget, so the right code is refused too.
+    portalAskForCode($this, '09121234567');
+    $fresh = portalCodeFrom($this->gateway);
+
+    $this->post(route('portal.verify.store'), ['code' => $fresh])
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    $this->assertGuest('client');
+});

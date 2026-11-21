@@ -62,7 +62,7 @@ class PortalAuthController extends Controller
     {
         $mobile = $request->session()->get(self::SESSION_MOBILE);
 
-        $client = is_string($mobile) ? $this->otp->verify($mobile, $request->code()) : null;
+        $client = is_string($mobile) ? $this->otp->verify($mobile, $request->code(), (string) $request->ip()) : null;
 
         if (! $client instanceof Client) {
             return back()->with('error', __('portal.code_invalid'));

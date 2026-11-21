@@ -66,6 +66,13 @@
         </div>
     </section>
 
+    <section class="card" aria-labelledby="chart-title">
+        <div class="card__body">
+            <h2 id="chart-title" class="card__title">{{ __('reviews.chart_title') }}</h2>
+            <x-chart-line :chart="$chart" :label="__('reviews.chart_title')" />
+        </div>
+    </section>
+
     <form method="POST" action="{{ route('specialist.reviews.update', $set) }}" class="card form" novalidate>
         @csrf
         @method('PUT')

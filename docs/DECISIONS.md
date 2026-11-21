@@ -461,3 +461,17 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Return.** The comment is required (max 500). The set stays pending and the comment replaces `note` (see S4-T1).
 - **Corrections on the page.** Not in this task. The correction form goes on the client file in S4-T4, so this page only handles pending sets.
 - **Panel link.** The specialist home links to the inbox.
+
+## 2026-11-21 — S4-T3: progress service and chart component
+
+- **One source for progress.** `ProgressService` reads `MeasurementSet::current()` only (published and not superseded), oldest first. A correction replaces the value it corrects, so the chart and summary show the latest version. Pending sets never appear (tested).
+- **Summary.** Per active type: first and latest published value and the change (latest minus first, signed, two decimals). A type's first value is taken from the earliest set that has it. The summary is for the client file (S4-T4) and the client portal (V1.0). Only the chart is shown on the review page in this task.
+- **Chart data.** One label per current set (Jalali date), oldest first. One series per key, with null where a set has no value (drawn with a gap). At most four series per chart (spec 11), enforced by an exception.
+- **Default series.** Weight, waist, abdomen and hip (the spec says "weight and selected circumferences"). The selection is fixed in this task.
+- **Colours.** Weight is the brand colour (`#E5546B`). Circumferences use muted tones. The hex values come from the spec tokens; they are in `ProgressService`.
+- **Chart.js.** Version 4.6.1 (MIT), self-hosted at `public/vendor/chartjs/chart.umd.js` with its licence. No CDN at runtime (spec 4).
+- **RTL.** The time axis is reversed (oldest on the right) and the value axis sits on the right. Legend and tooltip use RTL. Digits in ticks and tooltips are Persian, from the `data-digits` attribute, so no Persian is written in the script.
+- **Empty state.** With no values at all, the component shows «هنوز گزارشی منتشر نشده» and loads no script.
+- **Review page.** The chart shows the client's published history, not the pending set. The chart script is loaded only when there is data (`@push('scripts')` with `@once`).
+- **Not yet.** The chart on the client file (S4-T4) and the "My progress" tile (V1.0). Visual check at 375 px and 1280 px is still to be done in a browser.
+

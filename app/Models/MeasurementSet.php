@@ -90,6 +90,28 @@ class MeasurementSet extends Model
     }
 
     /**
+     * The values of this set keyed by measurement type key, as stored (decimal strings).
+     *
+     * @return array<string, string>
+     */
+    public function valuesByKey(): array
+    {
+        $this->loadMissing('measurements.type');
+
+        $values = [];
+
+        foreach ($this->measurements as $measurement) {
+            $key = $measurement->type?->getAttribute('key');
+
+            if (is_string($key)) {
+                $values[$key] = (string) $measurement->getAttribute('value');
+            }
+        }
+
+        return $values;
+    }
+
+    /**
      * @return BelongsTo<Client, $this>
      */
     public function client(): BelongsTo

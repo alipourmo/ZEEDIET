@@ -7,6 +7,7 @@ namespace App\Services\Reports;
 use App\Enums\MeasurementSetStatus;
 use App\Models\MeasurementSet;
 use App\Models\MeasurementType;
+use App\Support\Decimal;
 use Illuminate\Support\Collection;
 
 /**
@@ -53,14 +54,14 @@ final class ReviewQueue
 
     /**
      * One row per active measurement type, in display order. Values are the stored decimal strings; the change is
-     * current minus previous with a sign, or null when either side is missing.
+     * current minus previous with a sign (Decimal::difference), or null when either side is missing.
      *
      * @return list<array{key: string, label: string, unit: string, previous: ?string, current: ?string, change: ?string}>
      */
     public function comparison(MeasurementSet $set, ?MeasurementSet $previous): array
     {
-        $current = $this->valuesByKey($set);
-        $before = $previous === null ? [] : $this->valuesByKey($previous);
+        $current = $set->valuesByKey();
+        $before = $previous === null ? [] : $previous->valuesByKey();
 
         $rows = [];
 
@@ -77,45 +78,10 @@ final class ReviewQueue
                 'unit' => (string) $type->getAttribute('unit'),
                 'previous' => $was,
                 'current' => $now,
-                'change' => $this->change($was, $now),
+                'change' => Decimal::difference($was, $now),
             ];
         }
 
         return $rows;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function valuesByKey(MeasurementSet $set): array
-    {
-        $set->loadMissing('measurements.type');
-
-        $values = [];
-
-        foreach ($set->measurements as $measurement) {
-            $key = $measurement->type?->getAttribute('key');
-
-            if (is_string($key)) {
-                $values[$key] = (string) $measurement->getAttribute('value');
-            }
-        }
-
-        return $values;
-    }
-
-    /**
-     * Computed in hundredths so zero has no sign and the result has two decimals.
-     */
-    private function change(?string $previous, ?string $current): ?string
-    {
-        if ($previous === null || $current === null) {
-            return null;
-        }
-
-        $hundredths = (int) round(((float) $current - (float) $previous) * 100);
-        $sign = $hundredths > 0 ? '+' : ($hundredths < 0 ? '-' : '');
-
-        return $sign.number_format(abs($hundredths) / 100, 2, '.', '');
     }
 }

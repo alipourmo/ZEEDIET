@@ -11,6 +11,7 @@ use App\Http\Requests\Specialist\ReviewValuesRequest;
 use App\Models\MeasurementSet;
 use App\Models\User;
 use App\Services\Measurements\MeasurementRecorder;
+use App\Services\Progress\ProgressService;
 use App\Services\Reports\ReportWorkflow;
 use App\Services\Reports\ReviewQueue;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,7 @@ class ReviewController extends Controller
         private readonly ReviewQueue $queue,
         private readonly ReportWorkflow $workflow,
         private readonly MeasurementRecorder $recorder,
+        private readonly ProgressService $progress,
     ) {}
 
     public function index(): View
@@ -51,6 +53,7 @@ class ReviewController extends Controller
             'set' => $set,
             'previous' => $previous,
             'rows' => $this->queue->comparison($set, $previous),
+            'chart' => $this->progress->chart($set->client),
         ]);
     }
 

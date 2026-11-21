@@ -37,5 +37,6 @@
     <footer class="site-footer">
         <div class="container">{{ config('clinic.name') }} · {{ __('common.clinic_city') }}</div>
     </footer>
+    @stack('scripts')
 </body>
 </html>

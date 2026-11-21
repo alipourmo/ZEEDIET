@@ -602,3 +602,10 @@ main {
 .operator-row__body { flex: 1; min-inline-size: 0; }
 .operator-row__name { font-weight: 700; font-size: 1.125rem; }
 .operator-button { min-height: 44px; font-size: 1.0625rem; padding-inline: 1rem; }
+
+/* Measurement charts (S4-T3): the canvas needs a sized parent for responsive: true. */
+.chart {
+    position: relative;
+    block-size: 16rem;
+    margin: 1rem 0;
+}

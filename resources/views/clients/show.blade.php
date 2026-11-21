@@ -9,6 +9,9 @@
             @if (isset($packagesUrl) && $packagesUrl)
                 <a class="btn btn--secondary" href="{{ $packagesUrl }}">{{ __('packages.client_link') }}</a>
             @endif
+            @if (isset($paymentsUrl) && $paymentsUrl)
+                <a class="btn btn--secondary" href="{{ $paymentsUrl }}">{{ __('payments.client_link') }}</a>
+            @endif
             @if ($editUrl)
                 <a class="btn btn--secondary" href="{{ $editUrl }}">{{ __('clients.edit') }}</a>
             @endif

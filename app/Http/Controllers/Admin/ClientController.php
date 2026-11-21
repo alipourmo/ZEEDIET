@@ -81,6 +81,7 @@ class ClientController extends Controller
             'editUrl' => Gate::allows('client.update') ? route('admin.clients.edit', $client) : null,
             'medicalUrl' => Gate::allows('medical.view') ? route('admin.clients.medical.edit', $client) : null,
             'packagesUrl' => Gate::allows('package.manage') ? route('admin.packages.index', ['client' => $client->getKey()]) : null,
+            'paymentsUrl' => Gate::allows('payment.view') ? route('admin.payments.index', ['client' => $client->getKey()]) : null,
             'deleteUrl' => Gate::allows('client.delete') ? route('admin.clients.destroy', $client) : null,
             'backUrl' => route('admin.clients.index'),
         ]);

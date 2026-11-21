@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientMedicalController;
 use App\Http\Controllers\Admin\HolidayController;
 use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -123,6 +124,18 @@ Route::middleware(['auth', 'area:admin'])->group(function (): void {
         Route::get('/', [PackageController::class, 'index'])->name('index');
         Route::get('/create', [PackageController::class, 'create'])->name('create');
         Route::post('/', [PackageController::class, 'store'])->name('store');
+    });
+
+    // Payments (spec sections 6.5 and 8.2). Each route has its own Gate: listing and recording are payment.view and
+    // payment.record (admin and secretary); reversing is payment.reverse (admin only). No edit and no delete.
+    Route::prefix('admin/payments')->name('admin.payments.')->group(function (): void {
+        Route::get('/', [PaymentController::class, 'index'])->middleware('can:payment.view')->name('index');
+        Route::get('/create', [PaymentController::class, 'create'])->middleware('can:payment.record')->name('create');
+        Route::post('/', [PaymentController::class, 'store'])->middleware('can:payment.record')->name('store');
+        Route::get('/{payment}/reverse', [PaymentController::class, 'reverseForm'])
+            ->middleware('can:payment.reverse')->name('reverse.form');
+        Route::post('/{payment}/reverse', [PaymentController::class, 'reverse'])
+            ->middleware('can:payment.reverse')->name('reverse');
     });
 
     // Calendar (spec section 8.2): day, week and month. Every row needs appointment.view_all.

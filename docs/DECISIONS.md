@@ -486,3 +486,15 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Medical tab.** Unchanged from S1: the medical record is edited on its own page (`specialist.clients.medical.edit`), audited, and was already editable.
 - **Not in this task.** The appointments list on the client file (spec 8.4) and the "My progress" tile (V1.0). The client's own notes are not in the portal (notes are staff-only).
 - **Routes.** `specialist.notes.store` (POST `/specialist/clients/{client}/notes`) and `specialist.followups` (GET `/specialist/followups`), both behind `area:specialist` and `can:note.manage`. The follow-ups link is on the specialist home page.
+
+## 2026-11-21 — S4-T5: payments, ledger, admin reversal
+
+- **Amount is signed.** Spec 6.5 says `amount` is unsigned, but spec 8.2 says a reversal has a negative amount. The column is a signed `bigint`. The service refuses any payment below 1 Toman; only reversals are negative.
+- **Payments are append-only.** `Payment` throws on update and delete. There is no edit or delete route. A mistake is fixed by a reversal: a new row with the same client, method and package, the negative amount, `reverses_id` set to the original, and today's date. The original row is never changed. `reverses_id` is unique, so one payment can be reversed once. A reversal cannot be reversed.
+- **Permissions.** The matrix matches spec 5 for `payment.view` and `payment.record` (admin and secretary). Reversal is admin-only. Spec 5 does not name a key for it, so `payment.reverse` is added, held by admin alone. `report.admin` was not reused because it names a different area. The secretary gets 403 on the reversal form and on the submit.
+- **Date and time.** The date is typed in Jalali and may not be in the future. It is stored with the current clinic time, so the list order follows the order of entry on the same day. A reversal is dated now.
+- **Package link.** A payment may name a package. The package must belong to the same client (refused otherwise). The select lists every package with its client's name. A payment's appointment link is in the schema but not on the form yet.
+- **Ledger.** The client ledger is the payments list filtered by client. It shows the net total (payments minus reversals). Opening it is audited as `View` with `sections: [payments]`. The unfiltered list is not audited, because it is an aggregate view.
+- **Audit.** Recording and reversing both write `Create`. The audit holds the amount and method, or the amount and `reverses_id`. It never holds the reference, the note or the reversal reason.
+- **Not in this task.** A balance against a package price. Invoices (V1.5). The client portal's payment history (V1.0).
+- **Routes.** `admin.payments.index` (`payment.view`), `.create` and `.store` (`payment.record`), `.reverse.form` and `.reverse` (`payment.reverse`). All behind `area:admin`. The admin client file has a ledger link.

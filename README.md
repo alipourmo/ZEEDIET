@@ -131,7 +131,7 @@ Target: a Linux VPS in Iran with Nginx, PHP-FPM 8.4, MySQL 8, Supervisor (queue 
 | `php artisan clients:purge {id}` | after the retention period, by the admin's decision | Shows the rows; with `--confirm` hard-deletes a soft-deleted client and writes an audit row |
 
 Backup needs `BACKUP_ENCRYPTION_KEY`. Purge needs `CLINIC_RETENTION_DAYS`. Without them the commands refuse to run.
-Full release steps: [docs/RELEASE.md](docs/RELEASE.md). Staff and client guide (Persian): [docs/user-guide-fa.md](docs/user-guide-fa.md).
+Full release steps: [docs/RELEASE.md](docs/RELEASE.md). Staff and client guide (Persian): [docs/user-guide-fa.md](docs/user-guide-fa.md). Local demo in five minutes (Persian): [docs/DEMO-fa.md](docs/DEMO-fa.md).
 
 ## Security
 

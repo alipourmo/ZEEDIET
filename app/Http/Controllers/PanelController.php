@@ -8,15 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * Panel home pages. Real panel content is added in S2 (admin), S3 (operator) and S4 (specialist).
+ * Panel home pages for the operator and the specialist. The admin home is the dashboard (DashboardController).
  */
 class PanelController extends Controller
 {
-    public function admin(): View
-    {
-        return $this->panel('admin');
-    }
-
     public function operator(): View
     {
         return $this->panel('operator', [

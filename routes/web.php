@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\Catalog\RoomController;
 use App\Http\Controllers\Admin\Catalog\ServiceController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientMedicalController;
+use App\Http\Controllers\Admin\DailyReportController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HolidayController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\PaymentController;
@@ -50,7 +52,12 @@ Route::middleware('auth')->group(function (): void {
 
 // Panels (spec section 8). Access is checked by the area:* Gate (config/permissions.php).
 Route::middleware(['auth', 'area:admin'])->group(function (): void {
-    Route::get('/admin', [PanelController::class, 'admin'])->name('admin.home');
+    Route::get('/admin', [DashboardController::class, 'index'])->name('admin.home');
+
+    // Daily report (spec section 12, S4-T6). Admin only: report.admin on the route.
+    Route::get('/admin/reports/daily', [DailyReportController::class, 'index'])
+        ->middleware('can:report.admin')
+        ->name('admin.reports.daily');
 
     // Clients (spec sections 6.1 and 8.2). Each route is checked by its own Gate. The medical record needs
     // medical.view / medical.update, which secretaries do not have. Specialists use /specialist/clients.

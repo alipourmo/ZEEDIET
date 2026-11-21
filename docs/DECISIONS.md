@@ -499,3 +499,12 @@ Format: date, question, choice, reason. Newest entries at the bottom.
 - **Not in this task.** A balance against a package price. Invoices (V1.5). The client portal's payment history (V1.0).
 - **Routes.** `admin.payments.index` (`payment.view`), `.create` and `.store` (`payment.record`), `.reverse.form` and `.reverse` (`payment.reverse`). All behind `area:admin`. The admin client file has a ledger link.
 - **Spec 5 updated for `payment.reverse`.** The §5 grant table and key list gain `payment.reverse` (admin only). `PermissionMatrixTest` lists the same grant, so a config change without a spec change still fails it.
+
+## 2026-11-21 — S4-T6: admin dashboard and daily report
+
+- **The admin home is the dashboard.** `/admin` (route name `admin.home`) now shows the cards. The spec's name `admin.dashboard` is the same page. The name `admin.home` stays because the redirects and the panel tests use it.
+- **Secretary sees the operational cards:** today's appointments (cancelled left out), arrivals waiting (status `arrived`), and new clients this week (from the Saturday that starts the Persian week). Admin also sees the pending reports count (`pending_review` sets) and today's net payments. These two are financial or review data, so they are admin only, as the spec's dashboard row says.
+- **Daily report** (`admin.reports.daily`, optional `?date=` in Jalali) is behind `report.admin`, admin only. The secretary has the payment key but not `report.admin`, so she cannot reach payment totals through the report. It shows: appointments on the day (cancelled left out), daily clients, new clients, the no-show rate, appointments by status (all statuses, zero included), and net payments per method with a total. It holds no client names.
+- **Metric definitions** follow spec 8.2: daily clients = distinct clients with a completed appointment; new clients = created in range; no-show rate = no_show / (completed + no_show), null when both are zero (shown as «ندارد»).
+- **Net payments** are payments minus reversals, dated by `paid_at` in clinic time.
+- **Not in this task.** The S8 journey metrics and the portal. Charts on the dashboard.

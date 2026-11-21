@@ -76,6 +76,10 @@ return [
         'login_rate_limit_per_minute' => 5,
     ],
 
+    // Client records (spec 10.10). A soft-deleted client may be purged only after this many days. Null means the
+    // clinic has not set a period, and clients:purge refuses to run.
+    'retention_days' => filled(env('CLINIC_RETENTION_DAYS')) ? (int) env('CLINIC_RETENTION_DAYS') : null,
+
     // Client portal (spec 7.5). Codes are 5 digits, valid for 3 minutes, and a code takes at most 5 wrong tries.
     // Requests: 3 per mobile per 10 minutes and 10 per IP per hour. A signed-in client's session lasts up to 30 days
     // from sign-in and ends after 24 hours without a request.

@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsurePortalClient;
 use App\Http\Middleware\EnsureStaffIsActive;
 use App\Http\Middleware\NormalizeInput;
 use App\Http\Middleware\PortalSession;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,7 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'portal' => EnsurePortalClient::class,
         ]);
 
+        // SecurityHeaders is outermost, so redirects from the middleware below carry the headers too.
         $middleware->web(prepend: [
+            SecurityHeaders::class,
             PortalSession::class,
         ], append: [
             NormalizeInput::class,

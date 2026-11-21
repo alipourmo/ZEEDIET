@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\Backup\BackupEncryptor;
+use App\Services\Backup\BackupRestoreTester;
 use App\Services\Backup\BackupRetention;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
@@ -68,6 +69,12 @@ test('backup:restore-test restores the newest backup and every row count matches
     makeClient(['mobile' => '09129998888']);
 
     $this->artisan('backup:run')->assertSuccessful();
+
+    // Called directly, so a failure shows the exception message in the test output.
+    $result = app(BackupRestoreTester::class)->test();
+
+    expect($result['tables'])->toBeGreaterThan(10)
+        ->and($result['rows'])->toBeGreaterThanOrEqual(4);
 
     $this->artisan('backup:restore-test')
         ->expectsOutputToContain('Restore test passed')

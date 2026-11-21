@@ -90,7 +90,7 @@ final class BackupRetention
 
             $at = CarbonImmutable::createFromFormat('Ymd-His', $matches[1], 'Asia/Tehran');
 
-            if ($at !== false) {
+            if ($at instanceof CarbonImmutable) {
                 $backups[] = ['name' => $name, 'at' => $at];
             }
         }

@@ -38,6 +38,7 @@ The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before 
 | S3-T5: operator's own entries, last seven days (read-only) | Done (CI green) |
 | S4-T1: report workflow (publish, return, correct; immutable published sets) | Done (CI green on `42a9ce6`) |
 | S4-T2: specialist inbox and review page (compare, edit, publish, return) | Done (CI green on `42f9093`) |
+| S4-T3: progress service (first and latest, deltas) and line chart component (Chart.js, published only) | Done (CI green on `cfc2035`) |
 | Operator, specialist, portal, SMS | Not yet (S3–S5 and later) |
 
 Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).

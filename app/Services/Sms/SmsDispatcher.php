@@ -39,7 +39,7 @@ final class SmsDispatcher
             return null;
         }
 
-        $source = $template?->body ?? $key->defaultBody();
+        $source = $template !== null ? $template->body : $key->defaultBody();
         $body = $this->render($source, $vars);
         $logged = $key->redactsCode()
             ? $this->render($source, array_merge($vars, ['code' => '[کد]']))
@@ -62,7 +62,7 @@ final class SmsDispatcher
      */
     public function resend(SmsLog $log): SmsLog
     {
-        if ($log->status !== SmsStatus::Failed) {
+        if ($log->currentStatus() !== SmsStatus::Failed) {
             throw ValidationException::withMessages(['status' => __('sms.errors.not_failed')]);
         }
 

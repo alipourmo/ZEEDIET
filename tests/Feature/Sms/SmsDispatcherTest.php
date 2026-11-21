@@ -154,7 +154,7 @@ test('resend queues a new row for a failed message, and refuses a sent one or an
         'status' => SmsStatus::Failed,
         'attempts' => 4,
     ]);
-    $again = $dispatcher->resend($failed);
+    $again = $dispatcher->resend($failed)->fresh();
 
     expect($again->getKey())->not->toBe($failed->getKey())
         ->and($again->status)->toBe(SmsStatus::Sent)

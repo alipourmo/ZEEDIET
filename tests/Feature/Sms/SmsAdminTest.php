@@ -56,6 +56,7 @@ test('a guest is sent to log in', function () {
 test('the admin edits a template, the change is audited with old and new text', function () {
     $admin = smsUser(StaffRole::Admin);
     $template = SmsTemplate::query()->where('key', 'welcome')->firstOrFail();
+    $original = $template->body;
 
     $this->actingAs($admin)
         ->put(route('admin.sms.templates.update', $template), [
@@ -69,7 +70,8 @@ test('the admin edits a template, the change is audited with old and new text', 
     $audit = AuditLog::query()->where('action', AuditAction::Update->value)
         ->where('subject_id', $template->getKey())->firstOrFail();
     expect($audit->actor_id)->toBe($admin->getKey())
-        ->and(json_encode($audit->changes))->toContain('خوش آمدید');
+        ->and($audit->changes['old']['body'])->toBe($original)
+        ->and($audit->changes['new']['body'])->toBe('{name} عزیز، خوش آمدید. {clinic}');
 });
 
 test('a template may only use its own placeholders, and the OTP must keep the code', function (string $key, string $body, bool $valid) {

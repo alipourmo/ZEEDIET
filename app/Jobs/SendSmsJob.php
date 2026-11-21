@@ -41,7 +41,7 @@ final class SendSmsJob implements ShouldQueue
     {
         $log = SmsLog::query()->find($this->logId);
 
-        if ($log === null || $log->status === SmsStatus::Sent) {
+        if ($log === null || $log->currentStatus() === SmsStatus::Sent) {
             return;
         }
 

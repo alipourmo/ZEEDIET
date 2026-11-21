@@ -60,8 +60,8 @@ test('an appointment inside the window gets one reminder, and a second run adds 
 
 test('appointments outside the window, and cancelled ones, get no reminder', function () {
     $this->booking->book(bookingInput($this, [
-        'starts_at' => clinicTime('2026-11-21', '09:30'),
-        'ends_at' => clinicTime('2026-11-21', '10:00'),
+        'starts_at' => clinicTime('2026-11-21', '10:00'),
+        'ends_at' => clinicTime('2026-11-21', '10:30'),
     ]), $this->admin);
 
     $cancelled = $this->booking->book(bookingInput($this, [

@@ -43,4 +43,15 @@ class SmsLog extends Model
             'sent_at' => 'datetime',
         ];
     }
+
+    /**
+     * The status with its enum type. Larastan reads the cast column as a string, so callers use this (as Appointment does).
+     */
+    public function currentStatus(): SmsStatus
+    {
+        /** @var SmsStatus $status */
+        $status = $this->getAttribute('status');
+
+        return $status;
+    }
 }

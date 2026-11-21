@@ -74,6 +74,20 @@ test('the admin edits a template, the change is audited with old and new text', 
         ->and($audit->changes['new']['body'])->toBe('{name} عزیز، خوش آمدید. {clinic}');
 });
 
+test('the OTP template stays on even when the form switches it off', function () {
+    $admin = smsUser(StaffRole::Admin);
+    $template = SmsTemplate::query()->where('key', 'otp')->firstOrFail();
+
+    $this->actingAs($admin)
+        ->put(route('admin.sms.templates.update', $template), [
+            'body' => 'کد ورود شما: {code}',
+            'is_active' => '0',
+        ])
+        ->assertRedirect(route('admin.sms.templates'));
+
+    expect($template->fresh()->is_active)->toBeTrue();
+});
+
 test('a template may only use its own placeholders, and the OTP must keep the code', function (string $key, string $body, bool $valid) {
     $admin = smsUser(StaffRole::Admin);
     $template = SmsTemplate::query()->where('key', $key)->firstOrFail();

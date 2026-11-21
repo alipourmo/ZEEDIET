@@ -33,6 +33,8 @@ for (const width of widths) {
       const viewport = root.clientWidth;
       const overflowing = [...document.querySelectorAll('body *')]
         .filter((el) => {
+          // The skip link is parked off-screen on purpose until it is focused (public/css/app.css). Not a layout fault.
+          if (el.classList.contains('skip-link')) return false;
           const rect = el.getBoundingClientRect();
           return rect.width > 0 && (rect.right > viewport + 1 || rect.left < -1);
         })

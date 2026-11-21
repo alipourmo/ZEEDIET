@@ -251,4 +251,3 @@ Route::prefix('my-account')->name('portal.')->group(function (): void {
         Route::post('logout', [PortalAuthController::class, 'destroy'])->name('logout');
     });
 });
-

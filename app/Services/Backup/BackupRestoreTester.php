@@ -124,6 +124,10 @@ final class BackupRestoreTester
         $inserted = 0;
         $batch = [];
 
+        // migrate:fresh seeds some tables (for example the client-code sequence). The backup holds the real rows, so the
+        // scratch table is emptied first. Otherwise the seeded row and the backed-up row collide.
+        $db->table($table)->delete();
+
         if (is_file($file)) {
             $handle = fopen($file, 'rb');
 

@@ -448,3 +448,56 @@ jobs:
           name: layout-screenshots
           path: build/layout/
           if-no-files-found: ignore
+
+  postgres:
+    name: Migrations and Pest on PostgreSQL 17
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: zeediet_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d zeediet_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: zeediet_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_SEARCH_PATH: public
+      DB_SSLMODE: disable
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, zip, pdo_pgsql, openssl, tokenizer, xml, ctype, fileinfo
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Migrate and seed on PostgreSQL
+        run: php artisan migrate:fresh --seed --force
+
+      - name: Pest on PostgreSQL
+        run: vendor/bin/pest --no-progress

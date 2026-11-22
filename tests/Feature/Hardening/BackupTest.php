@@ -79,7 +79,7 @@ test('backup:restore-test restores the newest backup and every row count matches
     $this->artisan('backup:restore-test')
         ->expectsOutputToContain('Restore test passed')
         ->assertSuccessful();
-});
+})->skip(fn () => config('database.default') === 'pgsql', 'Scratch-database restore is implemented for SQLite and MySQL only.');
 
 test('backup:restore-test fails on a damaged archive', function () {
     makeClient(['mobile' => '09121234567']);

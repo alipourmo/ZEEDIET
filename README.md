@@ -1,66 +1,35 @@
-# ZeeDiet Clinic Management System
+# ZeeDiet
 
-A Persian (RTL) web application for a nutrition and weight-loss clinic in Rafsanjan, Iran. Four role-based areas on one database: admin and secretary (`/admin`), device operator (`/operator`), nutrition specialist (`/specialist`), and client portal (`/my-account`).
+سامانهٔ مدیریت کلینیک تغذیه با رابط فارسی و راست‌چین (RTL)، ساخته‌شده با Laravel 13 و PHP 8.4.
 
-The full build specification is in [docs/SPEC.md](docs/SPEC.md). Read it before changing code.
+## فقط دو محیط اجرا لازم است
 
-## Status
+**یک codebase داریم؛ نسخهٔ جداگانه یا شاخهٔ جدا برای هاست و Vercel لازم نیست.** تفاوت محیط‌ها فقط در تنظیمات دیتابیس و سرویس‌های اجراست:
 
-**Sprint S0 is complete** (pending CI on its branch). The Laravel 13 project, the Persian layout, helpers, input normalisation and preview pages are in place. S1 (identity and clients) is done: S1-T1 to S1-T7 are complete (CI green on `0139170`). S2 (scheduling) is done: S2-T1 to S2-T6 are complete (CI green on `a3ec3d9`). S3 (operator, packages, measurements) is done: S3-T1 to S3-T5 are complete (CI green on `36d07b5`). Deferred items are listed in the sprint notes. Sprint notes: [docs/sprints/S3.md](docs/sprints/S3.md). Sprint notes: [docs/sprints/S2.md](docs/sprints/S2.md).
+| کاربرد | برنامه | پایگاه‌داده | وضعیت |
+|---|---|---|---|
+| اجرای محلی توسعه | PHP / Laravel | SQLite | توسعه و بررسی سریع |
+| سرور/هاست اصلی | PHP-FPM، worker و scheduler | MySQL 8 | مسیر پیشنهادی برای استفادهٔ عملیاتی |
+| آزمایش آنلاین | کانتینر FrankenPHP در Vercel | PostgreSQL در Supabase | محیط آزمایشی؛ اطلاعات واقعی وارد نشود |
 
-| Area | State |
-|---|---|
-| Specification | Done (`docs/SPEC.md`) |
-| Laravel 13 project (PHP 8.4, owner approved) | Done, first CI run pending |
-| Date, digit and mobile helpers (`app/Support`) | Done and verified |
-| Blade directives `@fa`, `@jdate`, `@jdatetime`, `@money` | Done |
-| Input normalisation middleware, flash messages | Done |
-| RTL layout, Vazirmatn, CSS tokens, card/button/badge | Done |
-| Preview pages (home, Jalali tool, mobile tool, `/_styleguide` local) | Done |
-| Vercel container preview | Files ready, deployment blocked (see DECISIONS) |
-| S1-T1: staff schema, permission config and Gates, panel middleware | Done (CI green) |
-| S1-T2: staff login, rate limit, forced password change, seeded staff | Done (CI green) |
-| S1-T3: audit logger, login/logout audit, admin audit viewer | Done (CI green) |
-| S1-T4: clients and medical record, codes, consent, Jalali birth date, duplicate mobile, soft delete | Done (CI green) |
-| S1-T5: alert badges, medical tab restricted to medical.view | Done (CI green) |
-| S1-T6: catalog CRUD for services, devices and rooms, example seeder | Done (CI green) |
-| S1-T7: staff accounts (create, deactivate, reset password) | Done (CI green) |
-| S2-T1: schedules and holidays, admin CRUD, Saturday–Thursday template | Done (CI green) |
-| S2-T2: availability rules (holiday, weekend, hours, overlap) with unit tests | Done (CI green) |
-| S2-T3: booking service with locks, reschedule, cancel, status history | Done (CI green; race test on MySQL) |
-| S2-T4: appointment form, resource pickers, free-slot endpoint | Done (CI green) |
-| S2-T5: calendar day, week and month in Jalali, filters | Done (CI green) |
-| S2-T6: transition actions (confirm, arrived, no-show, cancel with reason) | Done (CI green) |
-| S3-T1: session packages and device sessions schema; package pages; remaining sessions | Done (CI green) |
-| S3-T2: operator's list for today (device appointments, last 4 digits, alert flags) | Done (CI green) |
-| S3-T3: session recording (contraindication refusal, numbering under lock, package link, finish) | Done (CI green) |
-| S3-T4: measurement types and the operator's measurement form (range validation, Persian digits) | Done (CI green) |
-| S3-T5: operator's own entries, last seven days (read-only) | Done (CI green) |
-| S4-T1: report workflow (publish, return, correct; immutable published sets) | Done (CI green on `42a9ce6`) |
-| S4-T2: specialist inbox and review page (compare, edit, publish, return) | Done (CI green on `42f9093`) |
-| S4-T3: progress service (first and latest, deltas) and line chart component (Chart.js, published only) | Done (CI green on `cfc2035`) |
-| S4-T4: specialist client file (notes, next follow-up, measurement history and chart) and follow-ups due page | Done (CI green on `fe1f03b`) |
-| S4-T5: payments (record, list with Jalali date filter, client ledger, admin-only reversal; no edit or delete) | Done (CI green on `9a57227`) |
-| S4-T6: admin dashboard cards and daily report (admin only) | Done (CI green on `c8c3807`) |
-| S5-T1: SMS gateway (Kavenegar, log), dispatcher with retries, templates, sms_log with resend, appointment events, reminder command | Done (CI green on `f63751c`) |
-| S5-T2: event wiring (report_ready, appointment events) and reminder scheduler | Done with S5-T1 (CI green on `f63751c`) |
-| S5-T3: client OTP login (5-digit code, 3-minute expiry, rate limits, client guard) | Done (CI green on `80f2a68`) |
-| S5-T4: client portal (five tiles, reports, appointments read-only, sessions, payments; `ClientOwnedScope`) | Done (CI green on `80f2a68`) |
-| S5-T5: backup (`backup:run`, `backup:restore-test`), `clients:purge`, security headers and CSP, HSTS in production, OTP check limit, route and 403 matrix | Done (CI green on `a2d44ce`) |
-| S5-T6: performance pass (2,000 clients, 20,000 appointments, list pages under 300 ms) and `starts_at` index | Done (CI green on `a2d44ce`) |
-| S5-T7: `docs/RELEASE.md` (migrations, env, Supervisor, cron, SSL, backups, rollback) and `docs/user-guide-fa.md` | Done |
-| MVP gate 7 and 8: backup and restore test on seeded MySQL 8, and fresh install from README to sign-in (both in CI) | Done in CI (run `44876194248`). Manual check on the production host and a timed run on a clinic computer still to do. |
-| 375 px and 1280 px layout check (RTL, overflow, font) on the public sign-in pages | Automated in CI (run `44876837597`). Screenshots to be reviewed by a person. Portal and admin pages not yet covered. |
+Vercel + Supabase «نسخهٔ سوم برنامه» نیست؛ همان برنامه با تنظیمات آزمایشی است. راهنمای انتخاب و آماده‌سازی: [راهنمای محیط‌های اجرا](docs/deploy/README.md).
 
-Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md). Deferred work: [docs/BACKLOG.md](docs/BACKLOG.md). Sprint notes: [docs/sprints/](docs/sprints/).
+## قابلیت‌های برنامه
 
-## Requirements
+- پنل‌های مدیر/منشی، اپراتور، متخصص تغذیه و مراجعه‌کننده
+- پروندهٔ مراجعان، اطلاعات پزشکی با دسترسی نقش‌محور، نوبت‌دهی و تقویم شمسی
+- ثبت جلسات و اندازه‌گیری، گردش‌کار بررسی و انتشار گزارش، پیگیری و پرداخت
+- ورود کارکنان با موبایل و رمز، ورود OTP مراجعه‌کننده، پیامک و ثبت رخدادهای حسابرسی
 
-- PHP 8.4 with `mbstring`, `intl`, `zip`, `pdo_sqlite` (or `pdo_mysql` for MySQL), `openssl`, `tokenizer`, `xml`, `ctype`, `fileinfo`
-- Composer 2
-- MySQL 8 (utf8mb4) for the real application. The local default is SQLite.
+جزئیات محصول در [مشخصات سامانه](docs/SPEC.md) و راهنمای استفاده در [راهنمای فارسی](docs/user-guide-fa.md) است.
 
-## Local setup
+## پیش‌نیازها
+
+- PHP 8.4 و Composer 2
+- افزونه‌های PHP: `mbstring`, `intl`, `zip`, `openssl`, `tokenizer`, `xml`, `ctype`, `fileinfo`
+- دیتابیس بر اساس محیط: `pdo_sqlite` برای توسعه، `pdo_mysql` برای سرور، یا `pdo_pgsql` برای Supabase
+
+## اجرای محلی
 
 ```bash
 cp .env.example .env
@@ -71,73 +40,28 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-`migrate --seed` creates the tables and the staff accounts, and prints one temporary password per account (shown once). The admin account's mobile is `09000000001`. Open `http://127.0.0.1:8000/login`, sign in with that mobile and the printed password, and choose a new password when asked. The other seeded accounts are `09000000002` (secretary), `09000000003` (operator) and `09000000004` (specialist). If the printed passwords are lost, use a fresh database (`php artisan migrate:fresh --seed`).
+باز کنید: <http://127.0.0.1:8000/login>. Seed چهار حساب آزمایشی می‌سازد و رمز موقت هر حساب را فقط یک‌بار در ترمینال چاپ می‌کند؛ رمز مدیر برای شمارهٔ `09000000001` است. در نخستین ورود باید رمز جدید تعیین شود. برای دیدن صفحات، یک مراجعه‌کنندهٔ آزمایشی در پنل بسازید.
 
-In `local` environment the style guide is at `/_styleguide`.
+> `migrate:fresh --seed` تمام داده‌های دیتابیس فعال را پاک می‌کند. فقط از آن برای دیتابیس محلیِ قابل‌حذف استفاده کنید؛ برای Supabase یا سرور اصلی هرگز اجرا نکنید.
 
-## Checks
+## انتشار
+
+- **سرور/هاست اصلی:** [راهنمای استقرار PHP-FPM + MySQL](docs/deploy/vps-mysql.md) — شامل migration، صف، زمان‌بندی، backup، SSL و بازگشت نسخه.
+- **آزمایش آنلاین:** [راهنمای Vercel + Supabase](docs/deploy/vercel-supabase-fa.md) — محیط آزمایشی با schema مجزا و PostgreSQL. OTP پیامکی به سرویس SMS واقعی نیاز دارد.
+
+برای استقرار Vercel فعلاً لازم است مخزن را از داشبورد Vercel import کنید یا دسترسی پروژهٔ Vercel را برای اتصال Arena فراهم کنید. از این محیط آزمایشی برای دادهٔ واقعی مراجعان استفاده نکنید.
+
+## تست و کیفیت کد
 
 ```bash
-composer lint        # Pint (style)
-composer stan        # PHPStan level 6 (Larastan)
-composer test        # Pest
-php scripts/verify-support.php   # dependency-free checks for app/Support (any PHP 8.3+)
+composer lint
+composer stan
+composer test
+php scripts/verify-support.php
 ```
 
-CI (`.github/workflows/ci.yml`) runs Pint, PHPStan and Pest on every push.
+GitHub Actions سبک کد و تست‌ها را با SQLite، MySQL 8 و PostgreSQL 17 بررسی می‌کند. جزئیات CI در `.github/workflows/ci.yml` است.
 
-## Environment variables
+## تنظیمات و امنیت
 
-See `.env.example` for the full list with comments. The important ones:
-
-| Variable | Purpose |
-|---|---|
-| `APP_KEY` | Encryption key. Required in production. Set it in the Vercel project, never in the repository. |
-| `APP_ENV`, `APP_DEBUG`, `APP_URL` | Environment. Production uses `APP_DEBUG=false`. |
-| `APP_TIMEZONE` | `Asia/Tehran` |
-| `APP_LOCALE` | `fa` |
-| `DB_*` | Database. The Vercel preview runs without one. |
-| `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` | The container preset sets `array`, `array` and `sync`. |
-| `LOG_CHANNEL` | `stderr` in the container |
-| `SMS_DRIVER` | `log` (local/testing only; OTP codes are redacted) or `kavenegar` |
-| `KAVENEGAR_API_KEY`, `KAVENEGAR_SENDER` | SMS provider credentials. Never commit. |
-| `CLINIC_NAME`, `CLINIC_REMINDER_HOURS_BEFORE` | Clinic settings (`config/clinic.php`) |
-| `BACKUP_ENCRYPTION_KEY`, `BACKUP_DISK` | Backup encryption and off-server disk (S5) |
-| `CLINIC_RETENTION_DAYS` | Days a deleted client is kept before `clients:purge` may remove them. Empty blocks purge. |
-
-## Deployment
-
-### Vercel preview (feedback only)
-
-The preview runs as a container on Vercel (FrankenPHP, PHP 8.4), following Vercel's Laravel guide. Files: `Dockerfile`, `Caddyfile`, `vercel.json`, `.dockerignore`. It has no database, and sessions and cache are not kept between requests.
-
-1. In the Vercel dashboard, import the GitHub repository `alipourmo/ZEEDIET` and the branch with these files. Vercel detects the root `Dockerfile` and `vercel.json`. (The Vercel token used by the sandbox cannot yet create projects. See DECISIONS.)
-2. Set `APP_KEY` in the project environment variables. Generate it locally with `php artisan key:generate --show`.
-3. Deploy. Check `/healthz` and `/`.
-
-Do not put real client data into the preview.
-
-### Production (planned, spec section 16)
-
-Target: a Linux VPS in Iran with Nginx, PHP-FPM 8.4, MySQL 8, Supervisor (queue worker) and cron (`* * * * * php artisan schedule:run`). The hosting decision is still open. The release checklist (`docs/RELEASE.md`) is written in S5.
-
-## Operations commands
-
-| Command | When | Purpose |
-|---|---|---|
-| `php artisan appointments:send-reminders` | every 15 minutes (scheduler) | 24-hour appointment reminders |
-| `php artisan backup:run` | nightly, 02:30 (scheduler) | Encrypted backup to `BACKUP_DISK`, with retention (14 daily, 8 weekly) |
-| `php artisan backup:restore-test [--file=NAME]` | before go-live and monthly | Restores the newest (or named) backup into a scratch schema and checks every row count |
-| `php artisan clients:purge {id}` | after the retention period, by the admin's decision | Shows the rows; with `--confirm` hard-deletes a soft-deleted client and writes an audit row |
-
-Backup needs `BACKUP_ENCRYPTION_KEY`. Purge needs `CLINIC_RETENTION_DAYS`. Without them the commands refuse to run.
-Full release steps: [docs/RELEASE.md](docs/RELEASE.md). Staff and client guide (Persian): [docs/user-guide-fa.md](docs/user-guide-fa.md). Local demo in five minutes (Persian): [docs/DEMO-fa.md](docs/DEMO-fa.md).
-
-## Security
-
-- No secrets in the repository. `.env` is git-ignored.
-- The preview is `noindex`. `robots.txt` disallows all. Every web response carries `X-Robots-Tag: noindex, nofollow`.
-- Security headers on every response: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin`, a strict `Content-Security-Policy` (no inline scripts or styles). `Strict-Transport-Security` is sent in production.
-- Client sessions use secure, HttpOnly, SameSite=Lax cookies in production (spec 10.1).
-- Backups are AES-256-GCM encrypted. Route protection and the role-by-page refusal matrix are tested (`RouteProtectionTest`, `PermissionMatrixTest`).
-- All user-facing text is Persian and lives in `lang/fa/`.
+تنظیمات نمونه در [`.env.example`](.env.example) است. فایل `.env`، کلید `APP_KEY`، رمزهای دیتابیس و کلیدهای سرویس را commit نکنید. `APP_KEY` در هر محیط باید ثابت و محرمانه باشد. دیتابیس Supabase برای آزمایش است و فقط از schema `zeediet` استفاده می‌کند.

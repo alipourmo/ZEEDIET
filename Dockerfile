@@ -4,7 +4,7 @@
 FROM dunglas/frankenphp:1-php8.4-bookworm AS base
 
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
-    && install-php-extensions intl zip
+    && install-php-extensions intl zip pdo_pgsql
 
 WORKDIR /app
 
@@ -12,8 +12,8 @@ FROM base AS dependencies
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# composer.lock is copied when present. Commit it once Composer has run (see docs/DECISIONS.md).
-COPY composer.json composer.lock* ./
+# composer.lock is not committed; Composer resolves the declared constraints during the image build.
+COPY composer.json ./
 
 RUN composer install \
     --no-dev \
@@ -46,12 +46,13 @@ ENV PORT=80 \
     APP_ENV=production \
     APP_DEBUG=false \
     LOG_CHANNEL=stderr \
-    CACHE_STORE=array \
-    SESSION_DRIVER=array \
+    DB_CONNECTION=pgsql \
+    DB_SSLMODE=require \
+    CACHE_STORE=database \
+    SESSION_DRIVER=database \
     QUEUE_CONNECTION=sync
 
 USER www-data
 
-# If APP_KEY is not set in Vercel, a random key is generated at start. Sessions then reset on restart.
-# Set a stable APP_KEY in the Vercel project environment for anything beyond a preview.
-CMD ["sh", "-c", "export APP_KEY=\"${APP_KEY:-base64:$(head -c 32 /dev/urandom | base64)}\" && exec frankenphp run --config /etc/frankenphp/Caddyfile"]
+# APP_KEY and the Supabase connection must be configured in Vercel. Never generate a different key per container.
+CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]

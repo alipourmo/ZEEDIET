@@ -3,7 +3,7 @@
  * times for the chosen service, resources and Jalali date. Plain JavaScript, self-hosted, no dependencies.
  *
  * The form still works without this script: every picker is shown and the start time can be typed (see
- * docs/DECISIONS.md, S2-T4). All text comes from data-msg-* attributes set from lang/fa, so no Persian is written here.
+ * the S2-T4 design). All text comes from data-msg-* attributes set from lang/fa, so no Persian is written here.
  */
 (function () {
     'use strict';

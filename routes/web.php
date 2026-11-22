@@ -34,7 +34,9 @@ use App\Http\Controllers\Specialist\ClientMedicalController as SpecialistClientM
 use App\Http\Controllers\Specialist\FollowUpController as SpecialistFollowUpController;
 use App\Http\Controllers\Specialist\ReviewController as SpecialistReviewController;
 use App\Http\Controllers\Specialist\SpecialistNoteController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Throwable;
 
 Route::get('/', [PreviewController::class, 'home'])->name('preview.home');
 Route::get('/tools/jalali', [PreviewController::class, 'jalali'])->name('preview.jalali');
@@ -43,7 +45,15 @@ Route::get('/tools/mobile', [PreviewController::class, 'mobile'])->name('preview
 // Local environment only (spec section 8, S0-T2).
 Route::get('/_styleguide', [PreviewController::class, 'styleguide'])->name('preview.styleguide');
 
-Route::get('/healthz', static fn () => response()->json(['status' => 'ok']))->name('healthz');
+Route::get('/healthz', static function () {
+    try {
+        DB::connection()->select('select 1');
+
+        return response()->json(['status' => 'ok']);
+    } catch (Throwable) {
+        return response()->json(['status' => 'unavailable'], 503);
+    }
+})->name('healthz');
 
 // Staff authentication (spec section 8.1). Public routes are listed in tests/Feature/RouteProtectionTest.php.
 Route::get('/login', [LoginController::class, 'create'])->name('login');

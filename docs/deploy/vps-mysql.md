@@ -1,17 +1,15 @@
 # Release checklist
 
-This is the checklist for a production release of ZeeDiet (spec section 16, sprint S5-T7). Follow it in order. Each step
-says what to check before moving on.
+This is the checklist for a production release of ZeeDiet (see the deployment requirements in `docs/SPEC.md`, section 16). Follow it in order.
 
-The target is a Linux VPS in Iran: Nginx, PHP-FPM 8.4, MySQL 8, a Supervisor queue worker, and cron for the scheduler.
-The Vercel container in the repository is for preview feedback only. Do not put real client data there.
+The production target is a Linux VPS in Iran: Nginx, PHP-FPM 8.4, MySQL 8, a Supervisor queue worker, and cron for the scheduler. A separate Vercel + Supabase setup is documented for experimental testing only; do not put real client data there. See [vercel-supabase-fa.md](vercel-supabase-fa.md).
 
 ## 1. Before you start
 
 - [ ] The hosting domain is chosen, DNS points at the server, and the SSL certificate is issued (see section 6).
 - [ ] The SMS sender and the Kavenegar API key are issued by the provider. Without them, keep `SMS_DRIVER=log`, which
       sends no messages. Do not use the log driver in production for real clients.
-- [ ] CI is green on the commit to release (Pint, PHPStan and Pest on SQLite and MySQL 8).
+- [ ] CI is green on the commit to release (Pint, PHPStan and Pest on SQLite/MySQL; PostgreSQL migrations, seed and compatible tests).
 - [ ] `main` contains the commit to release. The release is deployed from `main` only.
 
 ## 2. Environment variables
@@ -215,4 +213,4 @@ Keep `APP_KEY` and `BACKUP_ENCRYPTION_KEY` unchanged through a rollback. Changin
   from `/admin/sms/log`.
 - The OTP sign-in is limited per mobile and per IP (see `config/clinic.php`, `portal`). A determined attacker on many IPs
   can still try many numbers. Watch the audit log and the sms log for unusual volume.
-- The container in the repository (Vercel) keeps sessions and cache in memory and has no database. It is for preview only.
+- The experimental Vercel setup uses the external Supabase PostgreSQL database for application data, sessions and cache, with synchronous queue dispatch. Do not use it for production: Vercel storage is ephemeral and there is no persistent worker/scheduler or off-site backup configured.

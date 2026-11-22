@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Vercel terminates HTTPS at its edge and forwards the original scheme in X-Forwarded-* headers.
+        $middleware->trustProxies(at: '*');
+
         // Panel access: route middleware 'area:admin', 'area:operator' or 'area:specialist' (spec section 8).
         $middleware->alias([
             'area' => EnsureAreaAccess::class,
